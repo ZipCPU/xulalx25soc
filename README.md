@@ -4,25 +4,25 @@ This project attempts to take two separate projects, the ZipCPU and Xess.com's X
 
 - External peripherals
 
-  -- 14 GPIO inputs, 15 GPIO outputs
-  -- PWM output (can be swapped for an FM transmitter ...)
-  -- Rx and Tx UART ports
-  -- 1MB SPI flash, together with a read/write controller
-  -- 32MB SDRAM capable of non-stop pipeline reads and writes
-  -- SD Card, sharing the SPI wires of the flash
+  - 14 GPIO inputs, 15 GPIO outputs
+  - PWM output (can be swapped for an FM transmitter ...)
+  - Rx and Tx UART ports
+  - 1MB SPI flash, together with a read/write controller
+  - 32MB SDRAM capable of non-stop pipeline reads and writes
+  - SD Card, sharing the SPI wires of the flash
 
 - Internal peripherals
 
-  -- Real-time clock and date4
-  -- Access to the FPGA configuration port, for unattended updates
-  -- ZipCPU debug/configuration port access from JTAG
+  - Real-time clock and date4
+  - Access to the FPGA configuration port, for unattended updates
+  - ZipCPU debug/configuration port access from JTAG
 
 - ZipCPU peripherals
 
-  -- 3x timers, each of which can be programmed either in a one shot mode or as a repeating interval timer
-  -- A watchdog timer, and a wishbone bus watchdog timer
-  -- Two interrupt controllers
-  -- Direct Memory Access (DMA) controller for unattended memory movement
+  - 3x timers, each of which can be programmed either in a one shot mode or as a repeating interval timer
+  - A watchdog timer, and a wishbone bus watchdog timer
+  - Two interrupt controllers
+  - Direct Memory Access (DMA) controller for unattended memory movement
 
 # Current Status
 
