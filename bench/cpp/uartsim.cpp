@@ -1,0 +1,234 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// Filename: 	uartsim.cpp
+//
+// Project:	XuLA2-LX25 SoC based upon the ZipCPU
+//
+// Purpose:	
+//
+// Creator:	Dan Gisselquist, Ph.D.
+//		Gisselquist Technology, LLC
+//
+////////////////////////////////////////////////////////////////////////////////
+//
+// Copyright (C) 2015-2016, Gisselquist Technology, LLC
+//
+// This program is free software (firmware): you can redistribute it and/or
+// modify it under the terms of  the GNU General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or (at
+// your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory, run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
+//
+// License:	GPL, v3, as defined and found on www.gnu.org,
+//		http://www.gnu.org/licenses/gpl.html
+//
+//
+////////////////////////////////////////////////////////////////////////////////
+//
+//
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <poll.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <signal.h>
+
+#include "uartsim.h"
+
+void	UARTSIM::setup_listener(const int port) {
+	struct	sockaddr_in	my_addr;
+
+	signal(SIGPIPE, SIG_IGN);
+
+	printf("Listening on port %d\n", port);
+
+	m_skt = socket(AF_INET, SOCK_STREAM, 0);
+	if (m_skt < 0) {
+		perror("Could not allocate socket: ");
+		exit(-1);
+	}
+
+	// Set the reuse address option
+	{
+		int optv = 1, er;
+		er = setsockopt(m_skt, SOL_SOCKET, SO_REUSEADDR, &optv, sizeof(optv));
+		if (er != 0) {
+			perror("SockOpt Err:");
+			exit(-1);
+		}
+	}
+
+	memset(&my_addr, 0, sizeof(struct sockaddr_in)); // clear structure
+	my_addr.sin_family = AF_INET;
+	my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	my_addr.sin_port = htons(port);
+	
+	if (bind(m_skt, (struct sockaddr *)&my_addr, sizeof(my_addr))!=0) {
+		perror("BIND FAILED:");
+		exit(-1);
+	}
+
+	if (listen(m_skt, 1) != 0) {
+		perror("Listen failed:");
+		exit(-1);
+	}
+}
+
+UARTSIM::UARTSIM(const int port) {
+	m_con = m_skt = -1;
+	setup_listener(port);
+	setup(25);
+	m_rx_baudcounter = 0;
+	m_tx_baudcounter = 0;
+	m_rx_state = RXIDLE;
+	m_tx_state = TXIDLE;
+}
+
+void	UARTSIM::kill(void) {
+	// Close any active connection
+	if (m_con >= 0)	close(m_con);
+	if (m_skt >= 0) close(m_skt);
+}
+
+void	UARTSIM::setup(unsigned isetup) {
+	if (isetup != m_setup) {
+		m_setup = isetup;
+		m_baud_counts = (isetup & 0x0ffffff);
+		m_nbits   = 8-((isetup >> 28)&0x03);
+		m_nstop   =((isetup >> 27)&1)+1;
+		m_nparity = (isetup >> 26)&1;
+		m_fixdp   = (isetup >> 25)&1;
+		m_evenp   = (isetup >> 24)&1;
+	}
+}
+
+int	UARTSIM::tick(int i_tx) {
+	int	o_rx = 1;
+
+	if (m_con < 0) {
+		// Can we accept a connection?
+		struct	pollfd	pb;
+
+		pb.fd = m_skt;
+		pb.events = POLLIN;
+		poll(&pb, 1, 0);
+
+		if (pb.revents & POLLIN) {
+			m_con = accept(m_skt, 0, 0);
+
+			if (m_con < 0)
+				perror("Accept failed:");
+		}
+	}
+
+	if ((!i_tx)&&(m_last_tx))
+		m_rx_changectr = 0;
+	else	m_rx_changectr++;
+	m_last_tx = i_tx;
+
+	if (m_rx_state == RXIDLE) {
+		if (!i_tx) {
+			m_rx_state = RXDATA;
+			m_rx_baudcounter =m_baud_counts+m_baud_counts/2;
+			m_rx_baudcounter -= m_rx_changectr;
+			m_rx_busy    = 0;
+			m_rx_data    = 0;
+		}
+	} else if (m_rx_baudcounter <= 0) {
+		if (m_rx_busy >= (1<<(m_nbits+m_nparity+m_nstop-1))) {
+			m_rx_state = RXIDLE;
+			if (m_con > 0) {
+				char	buf[1];
+				buf[0] = (m_rx_data >> (32-m_nbits-m_nstop-m_nparity))&0x0ff;
+				if (1 != send(m_con, buf, 1, 0)) {
+					close(m_con);
+					m_con = -1;
+				}
+			}
+		} else {
+			m_rx_busy = (m_rx_busy << 1)|1;
+			// Low order bit is transmitted first, in this
+			// order:
+			//	Start bit (1'b1)
+			//	bit 0
+			//	bit 1
+			//	bit 2
+			//	...
+			//	bit N-1
+			//	(possible parity bit)
+			//	stop bit
+			//	(possible secondary stop bit)
+			m_rx_data = ((i_tx&1)<<31) | (m_rx_data>>1);
+		} m_rx_baudcounter = m_baud_counts;
+	} else
+		m_rx_baudcounter--;
+
+	if (m_tx_state == TXIDLE) {
+		struct	pollfd	pb;
+		pb.fd = m_con;
+		pb.events = POLLIN;
+		if (poll(&pb, 1, 0) < 0)
+			perror("Polling error:");
+		if (pb.revents & POLLIN) {
+			char	buf[1];
+			if (1 == recv(m_con, buf, 1, MSG_DONTWAIT)) {
+				m_tx_data = (-1<<(m_nbits+m_nparity+1))
+					// << nstart_bits
+					|((buf[0]<<1)&0x01fe);
+				if (m_nparity) {
+					int	p;
+					if (m_fixdp)
+						p = m_evenp;
+					else {
+						int p = (m_tx_data >> 1)&0x0ff;
+						p = p ^ (p>>4);
+						p = p ^ (p>>2);
+						p = p ^ (p>>1);
+						p &= 1;
+						p ^= m_evenp;
+					}
+					m_tx_data |= (p<<(m_nbits+m_nparity));
+				}
+				m_tx_busy = (1<<(m_nbits+m_nparity+m_nstop+1))-1;
+				m_tx_state = TXDATA;
+				o_rx = 0;
+				m_tx_baudcounter = m_baud_counts;
+			}
+		}
+	} else if (m_tx_baudcounter == 0) {
+		m_tx_data >>= 1;
+		m_tx_busy >>= 1;
+		if (!m_tx_busy)
+			m_tx_state = TXIDLE;
+		else
+			m_tx_baudcounter = m_baud_counts;
+		o_rx = m_tx_data&1;
+	} else {
+		m_tx_baudcounter--;
+		o_rx = m_tx_data&1;
+	}
+
+	return o_rx;
+}
+
+/*
+	0x00	-> c0	= 1100 0000???
+	0x01	-> c0	= 1100 0000??
+	0x02	-> c0	= 1100 0000?
+	0x04	-> c1	= 1100 0001
+	0x20	-> c5	= 1100 0101
+	0x40	-> ca	= 1100 1010
+	0x80	-> d4	= 1101 0100
+ */
