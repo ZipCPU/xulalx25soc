@@ -33,7 +33,7 @@
 ##
 ##
 .PHONY: all
-all:	datestamp verilated sw bench bit
+all:	datestamp verilated sw bench
 # Could also depend upon load, if desired, but not necessary
 BENCH := `find bench -name Makefile` `find bench -name "*.cpp"` `find bench -name "*.h"`
 RTL   := `find rtl -name "*.v"` `find rtl -name Makefile`
