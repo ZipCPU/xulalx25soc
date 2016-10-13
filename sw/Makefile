@@ -32,7 +32,7 @@
 ##
 ##
 .PHONY: all
-PROGRAMS := $(OBJDIR) usbtst wbregs netusb wbsettime dumpflash	\
+PROGRAMS := $(OBJDIR) wbregs netusb wbsettime dumpflash	\
 	dumpsdram ziprun ramscope zipstate zipdbg cfgscope loadmem	\
 	sdcardscop uartscope
 all: $(PROGRAMS)
