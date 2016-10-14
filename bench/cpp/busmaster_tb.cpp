@@ -1,4 +1,4 @@
-// #define	XULA25
+#define	XULA25
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Filename:	busmaster_tb.cpp
@@ -447,7 +447,7 @@ public:
 			printf(" %s[%02x]=%08x(%08x)",
 				m_core->v__DOT__zippy__DOT__thecpu__DOT__wr_reg_ce?"WR":"--",
 				m_core->v__DOT__zippy__DOT__thecpu__DOT__wr_reg_id,
-				m_core->v__DOT__zippy__DOT__thecpu__DOT__wr_spreg_vl,
+				m_core->v__DOT__zippy__DOT__thecpu__DOT__wr_gpreg_vl,
 #ifdef	XULA25
 				m_core->v__DOT__zippy__DOT__thecpu__DOT__wr_spreg_vl
 #else
