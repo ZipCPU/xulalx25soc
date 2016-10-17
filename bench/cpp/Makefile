@@ -46,7 +46,7 @@ CXX      :=  g++
 OBJDIR   :=  obj-pc
 YYMMDD   := `date +%Y%m%d`
 VOBJDR   := ../../rtl/obj_dir
-VROOT    := /usr/share/verilator
+VROOT   ?= $(shell bash -c 'verilator -V|grep VERILATOR_ROOT | head -1 | sed -e " s/^.*=\s*//"')
 VINC     := -I$(VROOT)/include -I$(VOBJDR)
 CFLAGS   :=  -c -g -Wall -I. $(VINC)
 # Now return to the "all" target, and fill in some details
