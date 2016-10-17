@@ -52,8 +52,8 @@ I have tried it and the jury's still out regarding whether or not it works or
 even works well.
 
 Finally, while it may not really be that unique, this core does feature a fully
-functional SDRAM controller capable of one read cycle (or write cycle) every
-two clocks when pipelined.  Unlike many other dynamic memory controllers, this
-one was _not_ created from a proprietary, closed source, memory interface
-generation facility--so it is available for anyone to examine, study, and
-even comment upon and improve--subject to the conditions of the GPL.
+functional SDRAM controller capable of sustaining one read cycle (or write
+cycle) every two clocks when pipelined.  Unlike many other dynamic memory
+controllers, this one was _not_ created from a proprietary, closed source,
+memory interface generation facility--so it is available for anyone to examine,
+study, and even comment upon and improve--subject to the conditions of the GPL.
