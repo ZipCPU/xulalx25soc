@@ -15,7 +15,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015, Gisselquist Technology, LLC
+// Copyright (C) 2015-2016, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -26,6 +26,11 @@
 // ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
 // FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 // for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory, run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
 //
 // License:	GPL, v3, as defined and found on www.gnu.org,
 //		http://www.gnu.org/licenses/gpl.html
@@ -67,7 +72,7 @@ unsigned int	cmd_read(FPGA *fpga, int r) {
 		printf("ERR: errcount(%d) >= MAXERR on cmd_read(a=%02x)\n",
 			errcount, r);
 		printf("ZIPCTRL = 0x%08x", s);
-		if ((s & 0x0200)==0) printf(" STALL");
+		if ((s & 0x0200)==0) printf(" BUSY");
 		if  (s & 0x0400)     printf(" HALTED");
 		if ((s & 0x03000)==0x01000)
 			printf(" SW-HALT");
@@ -116,7 +121,7 @@ int main(int argc, char **argv) {
 		printf("0x%08x: ", v);
 		if (v & 0x0080) printf("PINT ");
 		// if (v & 0x0100) printf("STEP "); // self resetting
-		if((v & 0x00200)==0) printf("STALL ");
+		if((v & 0x00200)==0) printf("BUSY ");
 		if (v & 0x00400) printf("HALTED ");
 		if((v & 0x03000)==0x01000) {
 			printf("SW-HALT");
