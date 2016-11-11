@@ -140,7 +140,7 @@ public:
 				m_core->v__DOT__serialport__DOT__r_setup);
 		PIPECMDR::tick();
 
-#define	DEBUGGING_OUTPUT
+// #define	DEBUGGING_OUTPUT
 #ifdef	DEBUGGING_OUTPUT
 		bool	writeout = false;
 		/*
@@ -374,7 +374,7 @@ public:
 			printf("|%s%s%s%s%s",
 				(m_core->v__DOT__zippy__DOT__thecpu__DOT__alu_ce)?"a":"-",
 				(m_core->v__DOT__zippy__DOT__thecpu__DOT__alu_stall)?"s":"-",
-				(m_core->v__DOT__zippy__DOT__thecpu__DOT__doalu__DOT__genblk2__DOT__r_busy)?"B":"-",
+				(m_core->v__DOT__zippy__DOT__thecpu__DOT__doalu__DOT__r_busy)?"B":"-",
 				(m_core->v__DOT__zippy__DOT__thecpu__DOT__r_alu_gie)?"G":"-",
 				(m_core->v__DOT__zippy__DOT__thecpu__DOT__r_alu_illegal)?"i":"-");
 			printf("|%s%s%s%2x %s%s%s %2d %2d",
