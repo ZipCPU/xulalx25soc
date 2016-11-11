@@ -116,26 +116,6 @@
 //
 //
 //
-// OPT_NEW_INSTRUCTION_SET controls whether or not the new instruction set
-// is in use.  The new instruction set contains space for floating point
-// operations, signed and unsigned divide instructions, as well as bit reversal
-// and ... at least two other operations yet to be defined.  The decoder alone
-// uses about 70 fewer LUTs, although in practice this works out to 12 fewer
-// when all works out in the wash.  Further, floating point and divide
-// instructions will cause an illegal instruction exception if they are not
-// implemented--so software capability can be built to use these instructions
-// immediately, even if the hardware is not yet ready.
-//
-// This option is likely to go away in the future, obsoleting the previous
-// instruction set, so I recommend setting this option and switching to the
-// new instruction set as soon as possible.
-//
-`define	OPT_NEW_INSTRUCTION_SET
-//
-//
-//
-//
-//
 //
 // OPT_SINGLE_FETCH controls whether or not the prefetch has a cache, and 
 // whether or not it can issue one instruction per clock.  When set, the
@@ -231,8 +211,6 @@
 //
 //
 //
-`ifdef	OPT_NEW_INSTRUCTION_SET
-//
 //
 //
 // The new instruction set also defines a set of very long instruction words.
@@ -257,8 +235,6 @@
 //
 `define OPT_VLIW
 //
-//
-`endif // OPT_NEW_INSTRUCTION_SET
 //
 //
 `endif	// OPT_SINGLE_FETCH

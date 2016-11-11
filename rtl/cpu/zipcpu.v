@@ -607,8 +607,6 @@ module	zipcpu(i_clk, i_rst, i_interrupt,
 	assign	dcdvalid = r_dcdvalid;
 `endif
 
-`ifdef	OPT_NEW_INSTRUCTION_SET
-
 	// If not pipelined, there will be no opvalid_ anything, and the
 	idecode #(AW, IMPLEMENT_MPY, EARLY_BRANCHING, IMPLEMENT_DIVIDE,
 			IMPLEMENT_FPU)
@@ -625,25 +623,6 @@ module	zipcpu(i_clk, i_rst, i_interrupt,
 			dcd_early_branch,
 			dcd_branch_pc, dcd_ljmp,
 			dcd_pipe);
-`else
-	idecode_deprecated
-		#(AW, IMPLEMENT_MPY, EARLY_BRANCHING, IMPLEMENT_DIVIDE,
-			IMPLEMENT_FPU)
-		instruction_decoder(i_clk, (i_rst)||(clear_pipeline),
-			dcd_ce, dcd_stalled, instruction, instruction_gie,
-			instruction_pc, pf_valid, pf_illegal, dcd_phase,
-			dcd_illegal, dcd_pc, dcd_gie, 
-			{ dcdR_cc, dcdR_pc, dcdR },
-			{ dcdA_cc, dcdA_pc, dcdA },
-			{ dcdB_cc, dcdB_pc, dcdB },
-			dcdI, dcd_zI, dcdF, dcdF_wr, dcdOp,
-			dcdALU, dcdM, dcdDV, dcdFP, dcd_break, dcd_lock,
-			dcdR_wr,dcdA_rd, dcdB_rd,
-			dcd_early_branch,
-			dcd_branch_pc,
-			dcd_pipe);
-	assign	dcd_ljmp = 1'b0;
-`endif
 
 `ifdef	OPT_PIPELINED_BUS_ACCESS
 	reg		r_op_pipe;
@@ -819,7 +798,6 @@ module	zipcpu(i_clk, i_rst, i_interrupt,
 		begin // Set the flag condition codes, bit order is [3:0]=VNCZ
 			case(dcdF[2:0])
 			3'h0:	r_opF <= 6'h00;	// Always
-`ifdef	OPT_NEW_INSTRUCTION_SET
 			// These were remapped as part of the new instruction
 			// set in order to make certain that the low order
 			// two bits contained the most commonly used 
@@ -829,13 +807,6 @@ module	zipcpu(i_clk, i_rst, i_interrupt,
 			3'h3:	r_opF <= 6'h10;	// NE
 			3'h4:	r_opF <= 6'h30;	// GT (!N&!Z)
 			3'h5:	r_opF <= 6'h20;	// GE (!N)
-`else
-			3'h1:	r_opF <= 6'h11;	// Z
-			3'h2:	r_opF <= 6'h10;	// NE
-			3'h3:	r_opF <= 6'h20;	// GE (!N)
-			3'h4:	r_opF <= 6'h30;	// GT (!N&!Z)
-			3'h5:	r_opF <= 6'h24;	// LT
-`endif
 			3'h6:	r_opF <= 6'h02;	// C
 			3'h7:	r_opF <= 6'h08;	// V
 			endcase

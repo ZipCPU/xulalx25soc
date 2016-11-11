@@ -5,13 +5,7 @@
 // Project:	Zip CPU -- a small, lightweight, RISC CPU soft core
 //
 // Purpose:	This RTL file specifies how instructions are to be decoded
-//		into their underlying meanings.  This is specifically a version
-//	designed to support a "Next Generation", or "Version 2" instruction
-//	set as (currently) activated by the OPT_NEW_INSTRUCTION_SET option
-//	in cpudefs.v.
-//
-//	I expect to (eventually) retire the old instruction set, at which point
-//	this will become the default instruction set decoder.
+//		into their underlying meanings. 
 //
 //
 // Creator:	Dan Gisselquist, Ph.D.
