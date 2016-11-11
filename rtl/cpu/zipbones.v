@@ -45,11 +45,11 @@ module	zipbones(i_clk, i_rst,
 		i_dbg_cyc, i_dbg_stb, i_dbg_we, i_dbg_addr, i_dbg_data,
 			o_dbg_ack, o_dbg_stall, o_dbg_data
 `ifdef	DEBUG_SCOPE
-		, o_cpu_debug
+		, o_zip_debug
 `endif
 		);
 	parameter	RESET_ADDRESS=32'h0100000, ADDRESS_WIDTH=32,
-			LGICACHE=6, START_HALTED=0,
+			LGICACHE=8, START_HALTED=0,
 			AW=ADDRESS_WIDTH;
 	input	i_clk, i_rst;
 	// Wishbone master
@@ -71,7 +71,7 @@ module	zipbones(i_clk, i_rst,
 	output	wire	[31:0]	o_dbg_data;
 	//
 `ifdef	DEBUG_SCOPE
-	output	wire	[31:0]	o_cpu_debug;
+	output	wire	[31:0]	o_zip_debug;
 `endif
 
 	// 
@@ -119,8 +119,12 @@ module	zipbones(i_clk, i_rst,
 
 	initial	cmd_clear_pf_cache = 1'b0;
 	always @(posedge i_clk)
-		cmd_clear_pf_cache = (~i_rst)&&(dbg_cmd_write)
-					&&((i_dbg_data[11])||(i_dbg_data[6]));
+		if (i_rst)
+			cmd_clear_pf_cache <= 1'b0;
+		else if (dbg_cmd_write)
+			cmd_clear_pf_cache <= i_dbg_data[11];
+		else
+			cmd_clear_pf_cache <= 1'b0;
 	//
 	initial	cmd_step  = 1'b0;
 	always @(posedge i_clk)
@@ -175,7 +179,7 @@ module	zipbones(i_clk, i_rst,
 				(i_wb_err)||(cpu_lcl_cyc),
 			cpu_op_stall, cpu_pf_stall, cpu_i_count
 `ifdef	DEBUG_SCOPE
-			, o_cpu_debug
+			, o_zip_debug
 `endif
 			);
 
@@ -184,7 +188,7 @@ module	zipbones(i_clk, i_rst,
 	initial o_dbg_ack = 1'b0;
 	always @(posedge i_clk)
 		o_dbg_ack <= (i_dbg_cyc)&&((~i_dbg_addr)||(~o_dbg_stall));
-	assign	o_dbg_stall= 1'b0; //(i_dbg_cyc)&&(cpu_dbg_stall)&&(i_dbg_addr);
+	assign	o_dbg_stall=(i_dbg_cyc)&&(cpu_dbg_stall)&&(i_dbg_addr);
 
 	assign	o_ext_int = (cmd_halt) && (~i_wb_stall);
 
