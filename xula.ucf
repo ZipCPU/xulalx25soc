@@ -140,7 +140,21 @@ NET i_rx_uart      IOSTANDARD = LVTTL;
 ##############################
 NET "i_clk_12mhz" TNM_NET = "i_clk_12mhz";
 NET "i_ram_feedback_clk" TNM_NET = "i_ram_feedback_clk";
-TIMESPEC "TSi_clk_12mhz" = PERIOD "i_clk_12mhz" 83.0 ns HIGH 50%;
+
+#
+# TimeSpec.  The source clock to the XuLA2-LX25 and LX9 boards is a 12MHz
+# crystal oscillator.  12MHz corresponds to an 83.3333ns clocks---which would
+# be the line below:
+#
+# (Please leave this commented ... I'll explain ...)
 # TIMESPEC "TSi_clk_12mhz" = PERIOD "i_clk_12mhz" 83.333333 ns HIGH 50%;
-# TIMESPEC "TSi_ram_feedback_clk" = PERIOD "i_ram_feedback_clk" 10.0 ns HIGH 50%;
+# 
+# However, ISE struggles to meet timing with this design.  By slightly
+# adjusting the input clock speed faster in the hundreds of picoseconds range,
+# I can create timing closure.  At one time, someone explained to me that I was
+# really just forcing the XISE to use a different random seed for starting.
+# This may well be the case, but ... it's worked for me so far.
+TIMESPEC "TSi_clk_12mhz" = PERIOD "i_clk_12mhz" 83.1 ns HIGH 50%;
+#
+# The following line is included for completeness.  It is not used.
 TIMESPEC "TSi_ram_feedback_clk" = PERIOD "i_ram_feedback_clk" 11.3 ns HIGH 50%;
