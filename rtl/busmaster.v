@@ -64,9 +64,7 @@
 `endif
 `endif
 `define	FLASH_ACCESS
-`ifdef	XULA25
 `define SDCARD_ACCESS
-`endif
 //
 
 
