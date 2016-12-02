@@ -345,7 +345,7 @@ public:
 				(m_core->v__DOT__zippy__DOT__thecpu__DOT__r_halted)?"Z":"-",
 				(m_core->v__DOT__zippy__DOT__cpu_break)?"!":"-",
 				(m_core->v__DOT__zippy__DOT__cmd_halt)?"H":"-",
-				(m_core->v__DOT__zippy__DOT__thecpu__DOT__gie)?"G":"-",
+				(m_core->v__DOT__zippy__DOT__thecpu__DOT__r_gie)?"G":"-",
 				(m_core->v__DOT__zippy__DOT__thecpu__DOT__pf_cyc)?"P":"-",
 				(m_core->v__DOT__zippy__DOT__thecpu__DOT__pf_valid)?"V":"-",
 				(m_core->v__DOT__zippy__DOT__thecpu__DOT__pf_illegal)?"i":" ",
@@ -384,7 +384,7 @@ public:
 				(m_core->v__DOT__zippy__DOT__cmd_addr),
 				(m_core->v__DOT__zippy__DOT__thecpu__DOT__bus_err)?"BE":"  ",
 				(m_core->v__DOT__zippy__DOT__thecpu__DOT__ibus_err_flag)?"IB":"  ",
-				(m_core->v__DOT__zippy__DOT__thecpu__DOT__ubus_err_flag)?"UB":"  ",
+				(m_core->v__DOT__zippy__DOT__thecpu__DOT__r_ubus_err_flag)?"UB":"  ",
 				m_core->v__DOT__zippy__DOT__thecpu__DOT__domem__DOT__rdaddr,
 				m_core->v__DOT__zippy__DOT__thecpu__DOT__domem__DOT__wraddr);
 #ifdef	XULA25
@@ -402,7 +402,7 @@ public:
 			printf(" PC0x%08x/%08x/%08x-%08x %s0x%08x", 
 				m_core->v__DOT__zippy__DOT__thecpu__DOT__pf_pc,
 				m_core->v__DOT__zippy__DOT__thecpu__DOT__ipc,
-				m_core->v__DOT__zippy__DOT__thecpu__DOT__upc,
+				m_core->v__DOT__zippy__DOT__thecpu__DOT__r_upc,
 				m_core->v__DOT__zippy__DOT__thecpu__DOT__instruction,
 				(m_core->v__DOT__zippy__DOT__thecpu__DOT__instruction_decoder__DOT__genblk3__DOT__r_early_branch)?"EB":"  ",
 				m_core->v__DOT__zippy__DOT__thecpu__DOT__instruction_decoder__DOT__genblk3__DOT__r_branch_pc
@@ -522,7 +522,7 @@ public:
 			*/
 
 			// Debug some conditions
-			if (m_core->v__DOT__zippy__DOT__thecpu__DOT__ubreak)
+			if (m_core->v__DOT__zippy__DOT__thecpu__DOT__r_ubreak)
 				printf(" BREAK");
 			// if (m_core->v__DOT__zippy__DOT__thecpu__DOT__w_switch_to_interrupt)
 				// printf(" TO-INT");
