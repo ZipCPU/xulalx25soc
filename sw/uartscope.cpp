@@ -63,12 +63,12 @@ void	closeup(int v) {
 }
 
 void	decode(DEVBUS::BUSW val) {
-	int	trig, txbusy, tx_stb, tx_data, tx_uart;
+	int	txbusy, tx_stb, tx_data, tx_uart; // trig
 	int	rx_rdy, rx_stb, rx_data, rx_uart;
 	int	rx_break, rx_frame, rx_parity;
 	int	wbcyc, wbstb, wbwe, wback, wbaddr;
 
-	trig    = ((val>>31)&1);
+	// trig    = ((val>>31)&1);
 	txbusy  = ((val>>30)&1);
 	wbaddr  = ((val>>28)&3);
 	rx_break  = (val>>27)&1;

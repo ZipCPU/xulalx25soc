@@ -40,7 +40,7 @@ CXX := g++
 LIBUSBINC := -I/usr/include/libusb-1.0/
 LIBUSBDIR := -L/usr/lib/x86_64-linux-gnu
 OBJDIR := obj-pc
-ZIPD := /home/dan/work/rnd/zipcpu/trunk/sw/zasm
+# ZIPD := /home/dan/work/rnd/zipcpu/trunk/sw/zasm
 BUSSRCS := ttybus.cpp llcomms.cpp regdefs.cpp usbi.cpp
 SOURCES := ziprun.cpp zipdbg.cpp dumpsdram.cpp wbregs.cpp netusb.cpp	\
 		flashdrvr.cpp loadmem.cpp $(BUSSRCS)
@@ -54,11 +54,11 @@ LIBS := -lusb-1.0
 $(OBJDIR)/%.o: %.cpp
 	$(CXX) $(CFLAGS) -c $< -o $@
 $(OBJDIR)/zipdbg.o: zipdbg.cpp
-	$(CXX) $(CFLAGS) -I$(ZIPD) -c $< -o $@
+	$(CXX) $(CFLAGS) -c $< -o $@
 $(OBJDIR)/cpuscope.o: cpuscope.cpp scopecls.h
-	$(CXX) $(CFLAGS) -I$(ZIPD) -c $< -o $@
+	$(CXX) $(CFLAGS) -c $< -o $@
 $(OBJDIR)/scopecls.o: scopecls.cpp scopecls.h
-	$(CXX) $(CFLAGS) -I$(ZIPD) -c $< -o $@
+	$(CXX) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean
 clean:
@@ -93,9 +93,8 @@ ziprun: $(OBJDIR)/ziprun.o $(OBJDIR)/flashdrvr.o $(BUSOBJS)
 	$(CXX) $(CFLAGS) $^ $(LIBS) -lelf -o $@
 zipstate: $(OBJDIR)/zipstate.o $(BUSOBJS)
 	$(CXX) $(CFLAGS) $^ $(LIBS) -o $@
-ZIPSRCS := $(addprefix $(ZIPD)/,zparser.cpp zopcodes.cpp)
-ZIPOBJS := twoc.o zparser.o zopcodes.o
-# ZIPOBJS := $(addprefix $(ZIPD)/$(OBJDIR)/,$(ZIPOBJS_RAW))
+ZIPSRCS := zparser.cpp zopcodes.cpp
+ZIPOBJS := $(addprefix $(OBJDIR)/,zparser.cpp zopcodes.cpp twoc.cpp)
 zipdbg: $(OBJDIR)/zipdbg.o $(BUSOBJS) $(ZIPSRCS) $(OBJDIR)/twoc.o
 	$(CXX) $(CFLAGS) $^ $(LIBS) -lncurses -o $@
 cpuscope: $(OBJDIR)/cpuscope.o $(OBJDIR)/scopecls.o $(BUSOBJS)
