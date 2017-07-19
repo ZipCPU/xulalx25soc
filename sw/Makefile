@@ -2,7 +2,7 @@
 ##
 ## Filename:	Makefile
 ##
-## Project:	XuLA2 board
+## Project:	XuLA2-LX25 SoC based upon the ZipCPU
 ##
 ## Purpose:	
 ##
@@ -12,7 +12,7 @@
 ##
 ################################################################################
 ##
-## Copyright (C) 2015-2016, Gisselquist Technology, LLC
+## Copyright (C) 2015-2017, Gisselquist Technology, LLC
 ##
 ## This program is free software (firmware): you can redistribute it and/or
 ## modify it under the terms of  the GNU General Public License as published
@@ -24,8 +24,13 @@
 ## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 ## for more details.
 ##
+## You should have received a copy of the GNU General Public License along
+## with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+## target there if the PDF file isn't present.)  If not, see
+## <http://www.gnu.org/licenses/> for a copy.
+##
 ## License:	GPL, v3, as defined and found on www.gnu.org,
-##		http:##www.gnu.org/licenses/gpl.html
+##		http://www.gnu.org/licenses/gpl.html
 ##
 ##
 ################################################################################
@@ -47,13 +52,13 @@ SOURCES := ziprun.cpp zipdbg.cpp dumpsdram.cpp wbregs.cpp netusb.cpp	\
 HEADERS := llcomms.h ttybus.h devbus.h regdefs.h usbi.h flashdrvr.h
 OBJECTS := $(addprefix $(OBJDIR)/,$(subst .cpp,.o,$(SOURCES)))
 BUSOBJS := $(addprefix $(OBJDIR)/,$(subst .cpp,.o,$(BUSSRCS)))
-CFLAGS := -g -Wall $(LIBUSBINC) -I.
+CFLAGS := -g -Wall $(LIBUSBINC) -I. -I../rtl
 LIBS := -lusb-1.0
+SUBMAKE := $(MAKE) --no-print-directory -C
 
-%.o: $(OBJDIR)/ $(OBJDIR)/%.o
+%.o: $(OBJDIR)/%.o
 $(OBJDIR)/%.o: %.cpp
-	$(CXX) $(CFLAGS) -c $< -o $@
-$(OBJDIR)/zipdbg.o: zipdbg.cpp
+	$(mk-objdir)
 	$(CXX) $(CFLAGS) -c $< -o $@
 $(OBJDIR)/cpuscope.o: cpuscope.cpp scopecls.h
 	$(CXX) $(CFLAGS) -c $< -o $@
@@ -89,33 +94,35 @@ dumpsdram: $(OBJDIR)/dumpsdram.o $(BUSOBJS)
 	$(CXX) $(CFLAGS) $^ $(LIBS) -o $@
 loadmem: $(OBJDIR)/loadmem.o $(BUSOBJS)
 	$(CXX) $(CFLAGS) $^ $(LIBS) -o $@
-ziprun: $(OBJDIR)/ziprun.o $(OBJDIR)/flashdrvr.o $(BUSOBJS)
+ziprun: $(OBJDIR)/ziprun.o $(OBJDIR)/flashdrvr.o $(BUSOBJS) $(OBJDIR)/byteswap.o $(OBJDIR)/zipelf.o
 	$(CXX) $(CFLAGS) $^ $(LIBS) -lelf -o $@
 zipstate: $(OBJDIR)/zipstate.o $(BUSOBJS)
 	$(CXX) $(CFLAGS) $^ $(LIBS) -o $@
-ZIPSRCS := zparser.cpp zopcodes.cpp
-ZIPOBJS := $(addprefix $(OBJDIR)/,zparser.cpp zopcodes.cpp twoc.cpp)
-zipdbg: $(OBJDIR)/zipdbg.o $(BUSOBJS) $(ZIPSRCS) $(OBJDIR)/twoc.o
-	$(CXX) $(CFLAGS) $^ $(LIBS) -lncurses -o $@
 cpuscope: $(OBJDIR)/cpuscope.o $(OBJDIR)/scopecls.o $(BUSOBJS)
 	$(CXX) $(CFLAGS) $^ $(LIBS) -o $@
 
-nothing:
-	@echo
-
 # ziprun: $(OBJDIR)/ziprun.o $(BUSOBJS)
 	# $(CXX) -g $^ -o $@
-# zipdbg: zipdbg.cpp $(ZIPD)/zparser.cpp $(ZIPD)/zopcodes.cpp $(ZIPD)/twoc.cpp $(BUSOBJS)
-	# $(CXX) -g -I../bench/cpp -I $(ZIPD)/ $^ -lncurses -o $@
+
+#
+DBGSRCS  := zopcodes.cpp twoc.cpp
+DBGOBJS := $(addprefix $(OBJDIR)/,$(subst .cpp,.o,$(DBGSRCS)))
+zipdbg: $(OBJDIR)/zipdbg.o $(BUSOBJS) $(DBGOBJS)
+	$(CXX) -g $^ $(LIBS) -lcurses -o $@
+
 
 usbtst: usbtst.cpp
 	$(CXX) $(CFLAGS) usbtst.cpp $(LIBS) -o usbtst
 txtest: txtest.cpp
 	$(CXX) $(CFLAGS) txtest.cpp $(LIBS) -o txtest
 
+define	mk-objdir
+	@bash -c "if [ ! -e $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi"
+endef
 
 define	build-depends
 	@echo "Building dependency file(s)"
+	$(mk-objdir)
 	@$(CXX) $(CPPFLAGS) -MM -I$(ZIPD) $(SOURCES) > $(OBJDIR)/xdepends.txt
 	@sed -e 's/^.*.o: /$(OBJDIR)\/&/' < $(OBJDIR)/xdepends.txt > $(OBJDIR)/depends.txt
 	@rm $(OBJDIR)/xdepends.txt
@@ -131,9 +138,6 @@ depends: tags
 
 $(OBJDIR)/depends.txt: $(OBJDIR)/ $(SOURCES) $(HEADERS)
 	$(build-depends)
-
-$(OBJDIR)/:
-	@bash -c "if [ ! -e $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi"
 
 # obj-pc/usbi.o: usbi.cpp
 	# $(CXX) $(LIBUSBINC) -I../../fpgalib/sw -c usbi.cpp  -o $@

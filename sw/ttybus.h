@@ -8,13 +8,13 @@
 //		with a UART on an FPGA, to command the WISHBONE on that same
 //		FPGA to ... whatever we wish to command it to do.
 //
-//		This code does not run on an FPGA, is not a test bench, neither
-//		is it a simulator.  It is a portion of a command program
-//		for commanding an FPGA.
+//	This code does not run on an FPGA, is not a test bench, neither
+//	is it a simulator.  It is a portion of a command program
+//	for commanding an FPGA.
 //
-//		This particular implementation is a complete rewrite of the
-//		last implementation, adding compression into the interface that
-//		wasn't there before.
+//	This particular implementation is a complete rewrite of the
+//	last implementation, adding compression into the interface that
+//	wasn't there before.
 //
 //
 // Creator:	Dan Gisselquist, Ph.D.
@@ -22,7 +22,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015-2016, Gisselquist Technology, LLC
+// Copyright (C) 2015-2017, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -33,6 +33,11 @@
 // ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
 // FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 // for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
 //
 // License:	GPL, v3, as defined and found on www.gnu.org,
 //		http://www.gnu.org/licenses/gpl.html
@@ -68,6 +73,7 @@ private:
 	BUSW	m_readtbl[1024], m_writetbl[512];
 
 	void	init(void) {
+		m_total_nread = 0;
 		m_interrupt_flag = false;
 		m_buflen = 0; m_buf = NULL;
 		m_addr_set = false;
@@ -110,8 +116,8 @@ public:
 	void	close(void) {	m_dev->close(); }
 	void	writeio(const BUSW a, const BUSW v);
 	BUSW	readio(const BUSW a);
-	void	readi(const BUSW a, const int len, BUSW *buf);
-	void	readz(const BUSW a, const int len, BUSW *buf);
+	void	readi( const BUSW a, const int len, BUSW *buf);
+	void	readz( const BUSW a, const int len, BUSW *buf);
 	void	writei(const BUSW a, const int len, const BUSW *buf);
 	void	writez(const BUSW a, const int len, const BUSW *buf);
 	bool	poll(void) { return m_interrupt_flag; };

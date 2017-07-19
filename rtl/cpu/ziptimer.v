@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // Filename:	ziptimer.v
 //
@@ -43,9 +43,9 @@
 // Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015, Gisselquist Technology, LLC
+// Copyright (C) 2015,2017, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -57,21 +57,29 @@
 // FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 // for more details.
 //
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
+//
 // License:	GPL, v3, as defined and found on www.gnu.org,
 //		http://www.gnu.org/licenses/gpl.html
 //
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//
+//
+`default_nettype	none
 //
 module	ziptimer(i_clk, i_rst, i_ce,
 		i_wb_cyc, i_wb_stb, i_wb_we, i_wb_data,
 			o_wb_ack, o_wb_stall, o_wb_data,
 		o_int);
 	parameter	BW = 32, VW = (BW-1), RELOADABLE=1;
-	input			i_clk, i_rst, i_ce;
+	input	wire		i_clk, i_rst, i_ce;
 	// Wishbone inputs
-	input			i_wb_cyc, i_wb_stb, i_wb_we;
-	input	[(BW-1):0]	i_wb_data;
+	input	wire		i_wb_cyc, i_wb_stb, i_wb_we;
+	input	wire [(BW-1):0]	i_wb_data;
 	// Wishbone outputs
 	output	reg			o_wb_ack;
 	output	wire			o_wb_stall;
@@ -154,5 +162,11 @@ module	ziptimer(i_clk, i_rst, i_ce,
 	else
 		assign	o_wb_data = { auto_reload, r_value };
 	endgenerate
+
+	// Make verilator happy
+	// verilator lint_off UNUSED
+	wire	[32:0]	unused;
+	assign	unused = { i_wb_cyc, i_wb_data };
+	// verilator lint_on  UNUSED
 
 endmodule

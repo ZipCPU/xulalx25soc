@@ -26,7 +26,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015-2016, Gisselquist Technology, LLC
+// Copyright (C) 2015-2017, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -37,6 +37,11 @@
 // ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY or
 // FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 // for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
 //
 // License:	GPL, v3, as defined and found on www.gnu.org,
 //		http://www.gnu.org/licenses/gpl.html
@@ -49,11 +54,11 @@
 // better here.
 module	wbucompress(i_clk, i_stb, i_codword, o_stb, o_cword, i_busy);
 	parameter	DW=32, CW=36, TBITS=10;
-	input				i_clk, i_stb;
-	input		[(CW-1):0]	i_codword;
+	input	wire			i_clk, i_stb;
+	input	wire	[(CW-1):0]	i_codword;
 	output	wire			o_stb;
 	output	wire	[(CW-1):0]	o_cword;
-	input				i_busy;
+	input	wire			i_busy;
 
 	//
 	//
@@ -190,13 +195,13 @@ module	wbucompress(i_clk, i_stb, i_codword, o_stb, o_cword, i_busy);
 			// when (~a_stb).  Hence this must be a two clock
 			// update
 			rd_addr <= tbl_addr + {(TBITS){1'b1}};
-			nxt_rd_addr = tbl_addr + { {(TBITS-1){1'b1}}, 1'b0 };
+			nxt_rd_addr <= tbl_addr + { {(TBITS-1){1'b1}}, 1'b0 };
 			tbl_match <= 1'b0;
 		end else if ((~tbl_match)&&(~match)
 				&&((~nxt_rd_addr[TBITS-1])||(tbl_filled)))
 		begin
 			rd_addr <= nxt_rd_addr;
-			nxt_rd_addr = nxt_rd_addr - { {(TBITS-1){1'b0}}, 1'b1 };
+			nxt_rd_addr <= nxt_rd_addr - { {(TBITS-1){1'b0}}, 1'b1 };
 			tbl_match <= nxt_match;
 		end
 	end
@@ -227,7 +232,7 @@ module	wbucompress(i_clk, i_stb, i_codword, o_stb, o_cword, i_busy);
 			pmatch <= { pmatch[0], 1'b1 };
 
 	reg		match;
-	reg	[9:0]	matchaddr;
+	reg	[(TBITS-1):0]	matchaddr;
 	always @(posedge i_clk)
 		if((w_accepted)||(~a_stb)||(~r_stb))// Reset upon any write
 			match <= 1'b0;
@@ -276,5 +281,11 @@ module	wbucompress(i_clk, i_stb, i_codword, o_stb, o_cword, i_busy);
 	// Can we do this without a clock delay?
 	assign	o_stb = a_stb;
 	assign	o_cword = (r_stb)?(r_cword):(a_addrword);
+
+	// Make verilator happy
+	// verilator lint_off UNUSED
+	wire	unused;
+	assign	unused = adr_dbld[9];
+	// verilator lint_on  UNUSED
 endmodule
 

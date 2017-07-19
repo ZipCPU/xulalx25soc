@@ -1,8 +1,8 @@
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // Filename: 	flashconfig.v
 //
-// Project:	XuLA2 board
+// Project:	XuLA2-LX25 SoC based upon the ZipCPU
 //
 // Purpose:	A configuration file, separated from the controller file, so
 //		that multiple files can use the same wishbone Quad Spi Flash
@@ -10,11 +10,10 @@
 //	the configuration only includes whether the flash is read only or not.
 //	Other configuration options may be added later.
 //
-//
-// Creator:	Dan Gisselquist
+// Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2015, Gisselquist Technology, LLC
 //
@@ -29,7 +28,7 @@
 // for more details.
 //
 // You should have received a copy of the GNU General Public License along
-// with this program.  (It's in the $(ROOT)/doc directory, run make with no
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
 // target there if the PDF file isn't present.)  If not, see
 // <http://www.gnu.org/licenses/> for a copy.
 //
@@ -37,7 +36,7 @@
 //		http://www.gnu.org/licenses/gpl.html
 //
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 `ifndef	FLASH_CONFIG_V
 `define	FLASH_CONFIG_V

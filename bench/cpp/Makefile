@@ -15,7 +15,7 @@
 ##
 ################################################################################
 ##
-## Copyright (C) 2015-2016, Gisselquist Technology, LLC
+## Copyright (C) 2015-2017, Gisselquist Technology, LLC
 ##
 ## This program is free software (firmware): you can redistribute it and/or
 ## modify it under the terms of  the GNU General Public License as published
@@ -45,9 +45,10 @@ all:
 CXX      :=  g++
 OBJDIR   :=  obj-pc
 YYMMDD   := `date +%Y%m%d`
-VOBJDR   := ../../rtl/obj_dir
+RTLDR    := ../../rtl
+VOBJDR   := $(RTLDR)/obj_dir
 VROOT   ?= $(shell bash -c 'verilator -V|grep VERILATOR_ROOT | head -1 | sed -e " s/^.*=\s*//"')
-VINC     := -I$(VROOT)/include -I$(VOBJDR)
+VINC     := -I$(VROOT)/include -I$(VOBJDR) -I$(VROOT)/include/vltstd -I$(RTLDR) -I../../sw/
 CFLAGS   :=  -c -g -Wall -I. $(VINC)
 # Now return to the "all" target, and fill in some details
 all:	$(OBJDIR)/ programs archive
@@ -74,17 +75,19 @@ HEADERS := $(CLSHEADERS)
 
 $(OBJDIR)/%.o: %.cpp
 	$(CXX) $(CFLAGS) $< -o $@
-$(OBJDIR)/busmaster_tb.o: busmaster_tb.cpp pipecmdr.h sdramsim.h
+$(OBJDIR)/busmaster_tb.o: busmaster_tb.cpp pipecmdr.h sdramsim.h zipelf.h
 $(OBJDIR)/busmaster_tb.o: port.h $(VOBJDR)/Vbusmaster.h
 	$(CXX) $(CFLAGS) busmaster_tb.cpp -o $@
-$(OBJDIR)/verilated.o: $(VROOT)/include/verilated.cpp
+$(OBJDIR)/%.o: $(VROOT)/include/%.cpp
 	$(CXX) $(CFLAGS) $< -o $@
 
 busmaster_tb: $(OBJDIR)/qspiflashsim.o $(OBJDIR)/sdspisim.o
 busmaster_tb: $(OBJDIR)/uartsim.o $(OBJDIR)/sdramsim.o
-busmaster_tb: $(OBJDIR)/verilated.o $(VOBJDR)/Vbusmaster__ALL.a
+busmaster_tb: $(OBJDIR)/verilated.o $(OBJDIR)/verilated_vcd_c.o
+busmaster_tb: $(VOBJDR)/Vbusmaster__ALL.a
+busmaster_tb: $(OBJDIR)/zipelf.o $(OBJDIR)/byteswap.o
 busmaster_tb: $(OBJDIR)/busmaster_tb.o
-	$(CXX) -g -o $@ $^
+	$(CXX) -g -o $@ $^ -lelf
 
 define	build-depends
 	@echo "Building dependency file"

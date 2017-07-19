@@ -185,4 +185,9 @@ module	wbpwmaudio(i_clk,
 		o_wb_ack <= (i_wb_stb);
 	assign	o_wb_stall = 1'b0;
 
+	// Make Verilator happy
+	// verilator lint_off UNUSED
+	wire	[16:0]	unused;
+	assign	unused = { i_wb_cyc, i_wb_data[31:16] };
+	// verilator lint_on  UNUSED
 endmodule

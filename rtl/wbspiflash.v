@@ -1,8 +1,8 @@
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // Filename: 	wbspiflash.v
 //
-// Project:	XuLA2 board
+// Project:	XuLA2-LX25 SoC based upon the ZipCPU
 //
 // Purpose:	Access a SPI flash via a WISHBONE interface.  This
 //		includes both read and write (and erase) commands to the SPI
@@ -24,12 +24,12 @@
 //	(19 bits): Data (R/w, but expect writes to take a while)
 //		
 //
-// Creator:	Dan Gisselquist
+// Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015, Gisselquist Technology, LLC
+// Copyright (C) 2015-2017, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -42,7 +42,7 @@
 // for more details.
 //
 // You should have received a copy of the GNU General Public License along
-// with this program.  (It's in the $(ROOT)/doc directory, run make with no
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
 // target there if the PDF file isn't present.)  If not, see
 // <http://www.gnu.org/licenses/> for a copy.
 //
@@ -50,7 +50,9 @@
 //		http://www.gnu.org/licenses/gpl.html
 //
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//
+//
 `define	WBSPI_RESET		6'd0
 // `define	WBSPI_RESET_QUADMODE	1
 `define	WBSPI_IDLE		6'd2
@@ -146,7 +148,7 @@ module	wbspiflash(i_clk_100mhz,
 	end
 
 	reg	[7:0]	last_status;
-	reg		spif_cmd, spif_override;
+	reg		spif_cmd;
 	reg [(AW-1):0]	spif_addr;
 	reg	[31:0]	spif_data;
 	reg	[5:0]	state;

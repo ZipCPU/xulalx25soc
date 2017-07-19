@@ -2,10 +2,9 @@
 //
 // Filename:	regdefs.h
 //
-// Project:	XuLA2 board
+// Project:	XuLA2-LX25 SoC based upon the ZipCPU
 //
 // Purpose:	
-//
 //
 // Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
@@ -24,6 +23,11 @@
 // FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 // for more details.
 //
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
+//
 // License:	GPL, v3, as defined and found on www.gnu.org,
 //		http://www.gnu.org/licenses/gpl.html
 //
@@ -34,109 +38,112 @@
 #ifndef	REGDEFS_H
 #define	REGDEFS_H
 
-// #define	R_RESET		0x00000100
-// #define	R_STATUS	0x00000101
-// #define	R_CONTROL	0x00000101
-#define	R_VERSION	0x00000101
-#define	R_ICONTROL	0x00000102
-#define	R_BUSERR	0x00000103
-#define	R_ITIMER	0x00000104
-#define	R_DATE		0x00000105
-#define	R_GPIO		0x00000106
-#define	R_UART_CTRL	0x00000107
-#define	R_PWM_DATA	0x00000108
-#define	R_PWM_INTERVAL	0x00000109
-#define	R_UART_RX	0x0000010a
-#define	R_UART_TX	0x0000010b
-#define	R_SPIF_EREG	0x0000010c
-#define	R_SPIF_CREG	0x0000010d
-#define	R_SPIF_SREG	0x0000010e
-#define	R_SPIF_IDREG	0x0000010f
-#define	R_CLOCK		0x00000110
-#define	R_TIMER		0x00000111
-#define	R_STOPWATCH	0x00000112
-#define	R_CKALARM	0x00000113
-#define	R_CKSPEED	0x00000114
+// #define	R_RESET		0x00000400
+// #define	R_STATUS	0x00000404
+// #define	R_CONTROL	0x00000404
+#define	R_VERSION	0x00000404
+#define	R_ICONTROL	0x00000408
+#define	R_BUSERR	0x0000040c
+#define	R_ITIMER	0x00000410
+#define	R_DATE		0x00000414
+#define	R_GPIO		0x00000418
+#define	R_UART_CTRL	0x0000041c
+#define	R_PWM_DATA	0x00000420
+#define	R_PWM_INTERVAL	0x00000424
+#define	R_UART_RX	0x00000428
+#define	R_UART_TX	0x0000042c
+#define	R_SPIF_EREG	0x00000430
+#define	R_SPIF_CREG	0x00000434
+#define	R_SPIF_SREG	0x00000438
+#define	R_SPIF_IDREG	0x0000043c
+#define	R_CLOCK		0x00000440
+#define	R_TIMER		0x00000444
+#define	R_STOPWATCH	0x00000448
+#define	R_CKALARM	0x0000044c
+#define	R_CKSPEED	0x00000450
 
 // And because the flash driver needs these constants defined ...
-#define	R_QSPI_EREG	0x0000010c
-#define	R_QSPI_CREG	0x0000010d
-#define	R_QSPI_SREG	0x0000010e
-#define	R_QSPI_IDREG	0x0000010f
+#define	R_QSPI_EREG	0x00000430
+#define	R_QSPI_CREG	0x00000434
+#define	R_QSPI_SREG	0x00000438
+#define	R_QSPI_IDREG	0x0000043c
 
 // GPS registers
-//			0x00000114
-//			0x00000115
-//			0x00000116
-//			0x00000117
+//			0x00000450
+//			0x00000454
+//			0x00000458
+//			0x0000045c
 
 // WB Scope registers wb_addr[31:3]==30'h23, i.e. 46, 8c, 118
-#define	R_QSCOPE	0x00000118	// Quad SPI scope ctrl
-#define	R_QSCOPED	0x00000119	//	and data
-#define	R_CFGSCOPE	0x0000011a	// Configuration/ICAPE scope control
-#define	R_CFGSCOPED	0x0000011b	//	and data
-#define	R_RAMSCOPE	0x0000011c	// SDRAM scope control
-#define	R_RAMSCOPED	0x0000011d	//	and data
-#define	R_CPUSCOPE	0x0000011e	// SDRAM scope control
-#define	R_CPUSCOPED	0x0000011f	//	and data
+#define	R_QSCOPE	0x00000460	// Quad SPI scope ctrl
+#define	R_QSCOPED	0x00000464	//	and data
+#define	R_CFGSCOPE	0x00000468	// Configuration/ICAPE scope control
+#define	R_CFGSCOPED	0x0000046c	//	and data
+#define	R_RAMSCOPE	0x00000470	// SDRAM scope control
+#define	R_RAMSCOPED	0x00000474	//	and data
+#define	R_CPUSCOPE	0x00000478	// SDRAM scope control
+#define	R_CPUSCOPED	0x0000047c	//	and data
 //
 // SD Card
-#define	R_SDCARD_CTRL	0x00000120
-#define	R_SDCARD_DATA	0x00000121
-#define	R_SDCARD_FIFOA	0x00000122
-#define	R_SDCARD_FIFOB	0x00000123
+#define	R_SDCARD_CTRL	0x00000480
+#define	R_SDCARD_DATA	0x00000484
+#define	R_SDCARD_FIFOA	0x00000488
+#define	R_SDCARD_FIFOB	0x0000048c
 //
 // Unused/open
 // #define SOMETHING	0x00000124 -- 0x013f	(28 spaces)
 //
 // FPGA CONFIG/ICAP REGISTERS
-#define	R_CFG_CRC	0x00000140
-#define	R_CFG_FAR_MAJ	0x00000141
-#define	R_CFG_FAR_MIN	0x00000142
-#define	R_CFG_FDRI	0x00000143
-#define	R_CFG_FDRO	0x00000144
-#define	R_CFG_CMD	0x00000145
-#define	R_CFG_CTL	0x00000146
-#define	R_CFG_MASK	0x00000147
-#define	R_CFG_STAT	0x00000148
-#define	R_CFG_LOUT	0x00000149
-#define	R_CFG_COR1	0x0000014a
-#define	R_CFG_COR2	0x0000014b
-#define	R_CFG_PWRDN	0x0000014c
-#define	R_CFG_FLR	0x0000014d
-#define	R_CFG_IDCODE	0x0000014e
-#define	R_CFG_CWDT	0x0000014f
-#define	R_CFG_HCOPT	0x00000150
-#define	R_CFG_CSBO	0x00000152
-#define	R_CFG_GEN1	0x00000153
-#define	R_CFG_GEN2	0x00000154
-#define	R_CFG_GEN3	0x00000155
-#define	R_CFG_GEN4	0x00000156
-#define	R_CFG_GEN5	0x00000157
-#define	R_CFG_MODE	0x00000158
-#define	R_CFG_GWE	0x00000159
-#define	R_CFG_GTS	0x0000015a
-#define	R_CFG_MFWR	0x0000015b
-#define	R_CFG_CCLK	0x0000015c
-#define	R_CFG_SEU	0x0000015d
-#define	R_CFG_EXP	0x0000015e
-#define	R_CFG_RDBK	0x0000015f
-#define	R_CFG_BOOTSTS	0x00000160
-#define	R_CFG_EYE	0x00000161
-#define	R_CFG_CBC	0x00000162
+#define	R_CFG_CRC	0x00000500
+#define	R_CFG_FAR_MAJ	0x00000504
+#define	R_CFG_FAR_MIN	0x00000508
+#define	R_CFG_FDRI	0x0000050c
+#define	R_CFG_FDRO	0x00000510
+#define	R_CFG_CMD	0x00000514
+#define	R_CFG_CTL	0x00000518
+#define	R_CFG_MASK	0x0000051c
+#define	R_CFG_STAT	0x00000520
+#define	R_CFG_LOUT	0x00000524
+#define	R_CFG_COR1	0x00000528
+#define	R_CFG_COR2	0x0000052c
+#define	R_CFG_PWRDN	0x00000530
+#define	R_CFG_FLR	0x00000534
+#define	R_CFG_IDCODE	0x00000538
+#define	R_CFG_CWDT	0x0000053c
+#define	R_CFG_HCOPT	0x00000540
+#define	R_CFG_CSBO	0x00000548
+#define	R_CFG_GEN1	0x0000054c
+#define	R_CFG_GEN2	0x00000550
+#define	R_CFG_GEN3	0x00000554
+#define	R_CFG_GEN4	0x00000558
+#define	R_CFG_GEN5	0x0000055c
+#define	R_CFG_MODE	0x00000560
+#define	R_CFG_GWE	0x00000564
+#define	R_CFG_GTS	0x00000568
+#define	R_CFG_MFWR	0x0000056c
+#define	R_CFG_CCLK	0x00000570
+#define	R_CFG_SEU	0x00000574
+#define	R_CFG_EXP	0x00000578
+#define	R_CFG_RDBK	0x0000057c
+#define	R_CFG_BOOTSTS	0x00000580
+#define	R_CFG_EYE	0x00000584
+#define	R_CFG_CBC	0x00000588
 
 // RAM memory space
-#define	RAMBASE		0x00002000
+#define	RAMBASE		0x00008000
 #define	MEMWORDS	(1<<13)
+#define	MEMBYTES	(MEMWORDS<<2)
 // Flash memory space
-#define	SPIFLASH	0x00040000
+#define	SPIFLASH	0x000100000
 #define	FLASHWORDS	(1<<18)
+#define	FLASHBYTES	(FLASHWORDS<<2)
 // SDRAM memory space
-#define	SDRAMBASE	0x00800000
+#define	SDRAMBASE	0x002000000
 #define	SDRAMWORDS	(1<<25)
+#define	SDRAMBYTES	(SDRAMWORDS<<2)
 // Zip CPU Control and Debug registers
-#define	R_ZIPCTRL	0x01000000
-#define	R_ZIPDATA	0x01000001
+#define	R_ZIPCTRL	0x04000000
+#define	R_ZIPDATA	0x04000004
 
 
 // Interrupt control constants
@@ -149,16 +156,20 @@
 // Flash control constants
 #define	ERASEFLAG	0x80000000
 #define	DISABLEWP	0x10000000
+#define	ENABLEWP	0x00000000
 
-#define	SZPAGE		64
-#define	PGLEN		64
+#define	SZPAGEB		256
+#define	PGLENB		256
+#define	SZPAGEW		64
+#define	PGLENW		64
 #define	NPAGES		32
-#define	SECTORSZ	(NPAGES * SZPAGE)
-#define	NSECTORS	256
-#define	SECTOROF(A)	((A) & (-1<<10))
-#define	PAGEOF(A)	((A) & (-1<<6))
+#define	SECTORSZB	(NPAGES * SZPAGEB)	// In bytes, not words!!
+#define	SECTORSZW	(NPAGES * SZPAGEW)	// In words
+#define	NSECTORS	64
 
-#define	RAMLEN		0x02000
+#define	SECTOROF(A)	((A) & (-1<<12))
+#define	PAGEOF(A)	((A) & (-1<<8))
+
 
 // ZIP Control sequences
 #define	CPU_GO		0x0000

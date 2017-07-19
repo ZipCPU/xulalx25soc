@@ -5,7 +5,7 @@
 #include "sdramsim.h"
 
 short	SDRAMSIM::operator()(int clk, int cke, int cs_n, int ras_n, int cas_n, int we_n,
-		int bs, unsigned addr, int driv, short data) {
+		int bs, unsigned addr, int driv, short data, short dqm) {
 	short	result = 0;
 
 	if (driv) // If the bus is going out, reads don't make sense ... but
@@ -23,6 +23,7 @@ short	SDRAMSIM::operator()(int clk, int cke, int cs_n, int ras_n, int cas_n, int
 	}
 
 	if (m_pwrup < POWERED_UP_STATE) {
+		assert(dqm == 3);
 		if (m_clocks_till_idle > 0)
 			m_clocks_till_idle--;
 		if (m_pwrup == 0) {
@@ -111,7 +112,17 @@ short	SDRAMSIM::operator()(int clk, int cke, int cs_n, int ras_n, int cas_n, int
 
 		if ((m_clocks_till_idle > 0)&&(m_next_wr)) {
 			// printf("SDRAM[%08x] <= %04x\n", m_wr_addr, data & 0x0ffff);
-			m_mem[m_wr_addr++] = data;
+			int	waddr = m_wr_addr++, memval;
+			memval = m_mem[waddr];
+			if ((dqm&3)==0)
+				memval = data;
+			else if ((dqm&3)==3)
+				;
+			else if ((dqm&2)==0)
+				memval = (memval & 0x000ff) | (data & 0x0ff00);
+			else // if ((dqm&1)==0)
+				memval = (memval & 0x0ff00) | (data & 0x000ff);
+			m_mem[waddr] = memval;
 			result = data;
 			m_next_wr = false;
 		}

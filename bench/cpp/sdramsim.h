@@ -8,6 +8,9 @@
 #define	MAX_REFRESH_TIME	((int)(.064 * CLK_RATE_HZ))
 #define	SDRAM_QSZ		16
 
+#define	LGSDRAMSZB	24
+#define	SDRAMSZB	(1<<LGSDRAMSZB)
+
 class	SDRAMSIM {
 	int	m_pwrup;
 	short	*m_mem;
@@ -23,7 +26,7 @@ class	SDRAMSIM {
 	unsigned	m_fail;
 public:
 	SDRAMSIM(void) {
-		m_mem = new short[(1<<24)]; // 32 MB, or 16 Mshorts
+		m_mem = new short[SDRAMSZB/2]; // 32 MB, or 16 Mshorts
 
 		m_refresh_time = new unsigned[(1<<13)];
 		for(int i=0; i<m_nrefresh; i++)
@@ -51,8 +54,26 @@ public:
 	short operator()(int clk, int cke,
 			int cs_n, int ras_n, int cas_n, int we_n, int bs, 
 				unsigned addr,
-			int driv, short data);
+			int driv, short data, short dqm);
 	int	pwrup(void) const { return m_pwrup; }
+
+	void	load(unsigned addr, const char *data, size_t len) {
+		short		*dp;
+		const char	*sp = data;
+		unsigned	base;
+
+		assert((addr&1)==0);
+		base = addr & (SDRAMSZB-1);
+		assert((len&1)==0);
+		assert(addr + len < SDRAMSZB);
+		dp = &m_mem[(base>>1)];
+		for(unsigned k=0; k<len/2; k++) {
+			short	v;
+			v = (sp[0]<<8)|(sp[1]&0x0ff);
+			sp+=2;
+			*dp++ = v;
+		}
+	}
 };
 
 #endif

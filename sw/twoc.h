@@ -1,8 +1,8 @@
-////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // Filename: 	twoc.h
 //
-// Project:	A Doubletime Pipelined FFT
+// Project:	Zip CPU -- a small, lightweight, RISC CPU soft core
 //
 // Purpose:	Some various two's complement related C++ helper routines.
 //		Specifically, these help extract signed numbers from
@@ -12,7 +12,7 @@
 // Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2015, Gisselquist Technology, LLC
 //
@@ -27,7 +27,7 @@
 // for more details.
 //
 // You should have received a copy of the GNU General Public License along
-// with this program.  (It's in the $(ROOT)/doc directory, run make with no
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
 // target there if the PDF file isn't present.)  If not, see
 // <http://www.gnu.org/licenses/> for a copy.
 //
@@ -35,12 +35,16 @@
 //		http://www.gnu.org/licenses/gpl.html
 //
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//
+//
 #ifndef	TWOC_H
 #define	TWOC_H
 
 extern	long	sbits(const long val, const int bits);
+extern	bool	sfits(const long val, const int bits);
 extern	unsigned long	ubits(const long val, const int bits);
+extern	unsigned long	rndbits(const long val, const int bi, const int bo);
 
 #endif
 

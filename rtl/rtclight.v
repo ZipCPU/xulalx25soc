@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // Filename: 	rtclight.v
 //		
@@ -16,9 +16,9 @@
 // Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015, Gisselquist Technology, LLC
+// Copyright (C) 2015,2017, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -39,27 +39,27 @@
 //		http://www.gnu.org/licenses/gpl.html
 //
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//
+//
+`default_nettype	none
+//
 module	rtclight(i_clk, 
 		// Wishbone interface
 		i_wb_cyc, i_wb_stb, i_wb_we, i_wb_addr, i_wb_data,
-		//	o_wb_ack, o_wb_stb, o_wb_data, // no reads here
-		// // Button inputs
-		// i_btn,
-		// Output registers
-		o_data, // multiplexed based upon i_wb_addr
-		// Output controls
+			o_wb_ack, o_wb_stall, o_wb_data, // no reads here
 		o_interrupt,
 		// A once-per-day strobe on the last clock of the day
-		o_ppd);
+		o_pps, o_ppd);
 	parameter	DEFAULT_SPEED = 32'd2814750;	// 100 Mhz
-	input	i_clk;
-	input	i_wb_cyc, i_wb_stb, i_wb_we;
-	input	[2:0]	i_wb_addr;
-	input	[31:0]	i_wb_data;
-	// input		i_btn;
-	output	reg	[31:0]	o_data;
-	output	wire		o_interrupt, o_ppd;
+	input	wire		i_clk;
+	input	wire		i_wb_cyc, i_wb_stb, i_wb_we;
+	input	wire	[2:0]	i_wb_addr;
+	input	wire	[31:0]	i_wb_data;
+	output	reg		o_wb_ack;
+	output	wire		o_wb_stall;
+	output	reg	[31:0]	o_wb_data;
+	output	wire		o_interrupt, o_pps, o_ppd;
 
 	reg	[21:0]	clock;
 	reg	[31:0]	stopwatch, ckspeed;
@@ -72,8 +72,10 @@ module	rtclight(i_clk,
 	assign	al_sel = ((i_wb_stb)&&(i_wb_addr[2:0]==3'b011));
 	assign	sp_sel = ((i_wb_stb)&&(i_wb_addr[2:0]==3'b100));
 
-	reg	[39:0]	ck_counter;
 	reg		ck_carry;
+	reg	[39:0]	ck_counter;
+	initial		ck_carry = 1'b0;
+	initial		ck_counter = 40'h00;
 	always @(posedge i_clk)
 		{ ck_carry, ck_counter } <= ck_counter + { 8'h00, ckspeed };
 
@@ -157,7 +159,7 @@ module	rtclight(i_clk,
 		ck_last_clock <= clock[21:0];
 		
 
-	reg	tm_pps, tm_ppm, tm_int;
+	reg	tm_pps, tm_int;
 	wire	tm_stopped, tm_running, tm_alarm;
 	assign	tm_stopped = ~timer[24];
 	assign	tm_running =  timer[24];
@@ -400,12 +402,22 @@ module	rtclight(i_clk,
 
 	always @(posedge i_clk)
 		case(i_wb_addr[2:0])
-		3'b000: o_data <= { 10'h0, ck_last_clock };
-		3'b001: o_data <= { 6'h00, timer };
-		3'b010: o_data <= stopwatch;
-		3'b011: o_data <= { 6'h00, al_tripped, al_enabled, 2'b00, alarm_time };
-		3'b100: o_data <= ckspeed;
-		default: o_data <= 32'h000;
+		3'b000: o_wb_data <= { 10'h0, ck_last_clock };
+		3'b001: o_wb_data <= { 6'h00, timer };
+		3'b010: o_wb_data <= stopwatch;
+		3'b011: o_wb_data <= { 6'h00, al_tripped, al_enabled, 2'b00, alarm_time };
+		3'b100: o_wb_data <= ckspeed;
+		default: o_wb_data <= 32'h000;
 		endcase
 
+	always @(posedge i_clk)
+		o_wb_ack <= i_wb_stb;
+	assign	o_wb_stall = 1'b0;
+	assign	o_pps = ck_pps;
+
+	// Make Verilator happy
+	// verilator lint_off UNUSED
+	wire	unused;
+	assign	unused = i_wb_cyc;
+	// verilator lint_on  UNUSED
 endmodule

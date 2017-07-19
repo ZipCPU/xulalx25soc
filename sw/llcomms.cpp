@@ -2,13 +2,12 @@
 //
 // Filename:	llcomms.cpp
 //
-// Project:	XuLA2 board
+// Project:	XuLA2-LX25 SoC based upon the ZipCPU
 //
 // Purpose:	This is the C++ program on the command side that will interact
 //		with a UART on an FPGA, both sending and receiving characters.
-//		Any bus interaction will call routines from this lower level
-//		library to accomplish the actual connection to and
-//		transmission to/from the board.
+//	Any bus interaction will call routines from this lower level library to
+//	accomplish the actual connection to and transmission to/from the board.
 //
 //
 // Creator:	Dan Gisselquist, Ph.D.
@@ -16,7 +15,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015-2016, Gisselquist Technology, LLC
+// Copyright (C) 2015-2017, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -28,12 +27,16 @@
 // FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 // for more details.
 //
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
+//
 // License:	GPL, v3, as defined and found on www.gnu.org,
 //		http://www.gnu.org/licenses/gpl.html
 //
 //
 ////////////////////////////////////////////////////////////////////////////////
-//
 //
 //
 #include <sys/socket.h>
@@ -66,6 +69,9 @@ LLCOMMSI::LLCOMMSI(void) {
 void	LLCOMMSI::write(char *buf, int len) {
 	int	nw;
 	nw = ::write(m_fdw, buf, len);
+	if (nw <= 0) {
+		throw "Write-Failure";
+	}
 	m_total_nwrit += nw;
 	assert(nw == len);
 }
@@ -73,6 +79,9 @@ void	LLCOMMSI::write(char *buf, int len) {
 int	LLCOMMSI::read(char *buf, int len) {
 	int	nr;
 	nr = ::read(m_fdr, buf, len);
+	if (nr <= 0) {
+		throw "Read-Failure";
+	}
 	m_total_nread += nr;
 	return nr;
 }

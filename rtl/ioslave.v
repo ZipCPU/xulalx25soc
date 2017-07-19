@@ -1,8 +1,8 @@
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
-// Filename:	ioslave
+// Filename:	ioslave.v
 //
-// Project:	XuLA2 board
+// Project:	XuLA2-LX25 SoC based upon the ZipCPU
 //
 // Purpose:	This handles a bunch of small, simple I/O registers.  To be
 //		included here, the I/O register must take exactly a single
@@ -20,9 +20,9 @@
 // Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015, Gisselquist Technology, LLC
+// Copyright (C) 2015-2017, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -34,11 +34,16 @@
 // FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 // for more details.
 //
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
+//
 // License:	GPL, v3, as defined and found on www.gnu.org,
 //		http://www.gnu.org/licenses/gpl.html
 //
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 //
 `include "builddate.v"
@@ -82,8 +87,7 @@ module	ioslave(i_clk,
 	assign	i_scop_int    = brd_interrupts[2];
 	assign	i_flash_int   = brd_interrupts[1];
 
-	// reg		[31:0]	pwrcount;
-	// reg		[31:0]	rtccount;
+	reg		[31:0]	pwrcount;
 	wire		[31:0]	ictrl_data, gpio_data, date_data, timer_data;
 
 	reg	[31:0]	r_wb_data;
@@ -91,18 +95,6 @@ module	ioslave(i_clk,
 	always @(posedge i_clk)
 	begin
 		r_wb_addr <= i_wb_addr[4];
-		// if ((i_wb_cyc)&&(i_wb_stb)&&(i_wb_we)&&(~i_wb_addr[4]))
-		// begin
-			// casez(i_wb_addr[3:0])
-			// // 4'h0: begin end // Reset register
-			// // 4'h1: begin end // Status/Control register
-			// // 4'h2: begin end // Reset register
-			// // 4'h3: begin end // Interrupt Control register
-			// // 4'h4: // R/O Power count
-			// // 4'h5: // RTC count
-			// default: begin end
-			// endcase
-		// end else
 		if ((i_wb_stb)&&(~i_wb_we))
 		begin
 			casez(i_wb_addr[3:0])
@@ -112,6 +104,7 @@ module	ioslave(i_clk,
 			4'h04: r_wb_data <= timer_data;
 			4'h05: r_wb_data <= date_data;
 			4'h06: r_wb_data <= gpio_data;
+			4'h07: r_wb_data <= pwrcount;
 			default: r_wb_data <= 32'h0000;
 			endcase
 		end
@@ -136,23 +129,13 @@ module	ioslave(i_clk,
 				ictrl_data, interrupt_vector,
 				o_interrupt);
 
-	/*
 	// The ticks since power up register
 	initial	pwrcount = 32'h00;
 	always @(posedge i_clk)
-		if (~ (&pwrcount))
+		if (!pwrcount[31])
 			pwrcount <= pwrcount+1;
-
-	// The time since power up register
-	reg	[15:0]	subrtc;
-	reg		subpps;
-	initial	rtccount = 32'h00;
-	initial	subrtc = 16'h00;
-	always @(posedge i_clk)
-		{ subpps, subrtc } <= subrtc + 16'd43;
-	always @(posedge i_clk)
-		rtccount <= rtccount + ((subpps)? 32'h1 : 32'h0);
-	*/
+		else
+			pwrcount[30:0] <= pwrcount[30:0] + 1'b1;
 
 	//
 	// GPIO controller
@@ -168,20 +151,16 @@ module	ioslave(i_clk,
 	//
 	//
 	wire	[31:0]	ck_data;
-	wire		ck_ppd;
+	wire		ck_ppd, ck_pps, ck_ack, ck_stall;
 	rtclight
-		// #(32'h3ba6fe)	//  72 MHz clock	(2^48 / 72e6)
-		// #(32'h388342)	//  76 MHz clock	(2^48 / 76e6)
 		#(32'h35afe5)	//  80 MHz clock
-		// #(32'h2eaf36)	//  92 MHz clock
-		// #(32'h2af31d)	// 100 MHz clock
 		theclock(i_clk, i_wb_cyc, (i_wb_stb)&&(i_wb_addr[4]),
 				i_wb_we, i_wb_addr[2:0], i_wb_data,
-			ck_data, ck_int, ck_ppd);
+			ck_ack, ck_stall, ck_data, ck_int, ck_pps, ck_ppd);
 
 	wire		date_ack, date_stall;
 	rtcdate	thedate(i_clk, ck_ppd,
-			i_wb_cyc, (i_wb_stb)&&(i_wb_addr[3:0]==4'h5),
+			(i_wb_stb)&&(i_wb_addr[3:0]==4'h5),
 				i_wb_we, i_wb_data,
 			date_ack, date_stall, date_data);
 
@@ -197,4 +176,10 @@ module	ioslave(i_clk,
 			i_uart_tx_int, i_uart_rx_int,
 			i_pwm_int, gpio_int, i_scop_int, i_flash_int,
 			ck_int, o_interrupt };
+
+	// Make Verilator -Wall happy
+	// verilator lint_off UNUSED
+	wire	[6:0] unused;
+	assign	unused = { tm_ack, tm_stall, ck_ack, ck_stall, date_ack, date_stall, ck_pps };
+	// verilator lint_on  UNUSED
 endmodule

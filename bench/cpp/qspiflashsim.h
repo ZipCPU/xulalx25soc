@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // Filename: 	spiflashsim.h
 //
@@ -9,12 +9,12 @@
 //		board by Digilent.  As such, it is defined by 32 Mbits of
 //		memory (4 Mbyte).
 //
-// Creator:	Dan Gisselquist
+// Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015, Gisselquist Technology, LLC
+// Copyright (C) 2015,2017, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -27,7 +27,7 @@
 // for more details.
 //
 // You should have received a copy of the GNU General Public License along
-// with this program.  (It's in the $(ROOT)/doc directory, run make with no
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
 // target there if the PDF file isn't present.)  If not, see
 // <http://www.gnu.org/licenses/> for a copy.
 //
@@ -35,7 +35,9 @@
 //		http://www.gnu.org/licenses/gpl.html
 //
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//
+//
 #ifndef	QSPIFLASHSIM_H
 #define	QSPIFLASHSIM_H
 
@@ -67,14 +69,35 @@ class	QSPIFLASHSIM {
 	char		*m_mem, *m_pmem;
 	int		m_last_sck;
 	unsigned	m_write_count, m_ireg, m_oreg, m_sreg, m_addr,
-			m_count, m_config, m_mode_byte, m_creg;
+			m_count, m_config, m_mode_byte, m_creg, m_membytes,
+			m_memmask;
 	bool		m_quad_mode, m_debug;
 
 public:
-	QSPIFLASHSIM(void);
-	void	load(const char *fname);
+	QSPIFLASHSIM(const int lglen = 24, bool debug = false);
+	void	load(const char *fname) { load(0, fname); }
+	void	load(const unsigned addr, const char *fname);
+	void	load(const uint32_t offset, const char *data, const uint32_t len);
+	bool	write_protect(void) { return ((m_sreg & QSPIF_WEL_FLAG)==0); }
+	bool	write_in_progress(void) { return ((m_sreg | QSPIF_WIP_FLAG)!=0); }
 	void	debug(const bool dbg) { m_debug = dbg; }
 	bool	debug(void) const { return m_debug; }
+	unsigned operator[](const int index) {
+		unsigned char	*cptr = (unsigned char *)&m_mem[index];
+		unsigned	v;
+		v = (*cptr++);
+		v = (v<<8)|(*cptr++);
+		v = (v<<8)|(*cptr++);
+		v = (v<<8)|(*cptr);
+
+		return v; }
+	void set(const unsigned addr, const unsigned val) {
+		unsigned char	*cptr = (unsigned char *)&m_mem[addr];
+		*cptr++ = (val>>24);
+		*cptr++ = (val>>16);
+		*cptr++ = (val>> 8);
+		*cptr   = (val);
+		return;}
 	int	operator()(const int csn, const int sck, const int dat);
 };
 

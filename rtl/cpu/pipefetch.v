@@ -30,7 +30,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015, Gisselquist Technology, LLC
+// Copyright (C) 2015,2017, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -42,11 +42,19 @@
 // FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 // for more details.
 //
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
+//
 // License:	GPL, v3, as defined and found on www.gnu.org,
 //		http://www.gnu.org/licenses/gpl.html
 //
 //
 ////////////////////////////////////////////////////////////////////////////////
+//
+//
+`default_nettype	none
 //
 module	pipefetch(i_clk, i_rst, i_new_pc, i_clear_cache, i_stall_n, i_pc,
 			o_i, o_pc, o_v,
@@ -56,9 +64,9 @@ module	pipefetch(i_clk, i_rst, i_new_pc, i_clear_cache, i_stall_n, i_pc,
 	parameter	RESET_ADDRESS=32'h0010_0000,
 			LGCACHELEN = 6, ADDRESS_WIDTH=24,
 			CACHELEN=(1<<LGCACHELEN), BUSW=32, AW=ADDRESS_WIDTH;
-	input				i_clk, i_rst, i_new_pc,
+	input	wire			i_clk, i_rst, i_new_pc,
 					i_clear_cache, i_stall_n;
-	input		[(AW-1):0]	i_pc;
+	input	wire	[(AW-1):0]	i_pc;
 	output	reg	[(BUSW-1):0]	o_i;
 	output	reg	[(AW-1):0]	o_pc;
 	output	wire			o_v;
@@ -68,11 +76,11 @@ module	pipefetch(i_clk, i_rst, i_new_pc, i_clear_cache, i_stall_n, i_pc,
 	output	reg	[(AW-1):0]	o_wb_addr;
 	output	wire	[(BUSW-1):0]	o_wb_data;
 	//
-	input			i_wb_ack, i_wb_stall, i_wb_err;
-	input		[(BUSW-1):0]	i_wb_data;
+	input	wire		i_wb_ack, i_wb_stall, i_wb_err;
+	input	wire	[(BUSW-1):0]	i_wb_data;
 	//
 	// Is the (data) memory unit also requesting access to the bus?
-	input				i_wb_request;
+	input	wire			i_wb_request;
 	output	wire			o_illegal;
 
 	// Fixed bus outputs: we read from the bus only, never write.
@@ -114,7 +122,7 @@ module	pipefetch(i_clk, i_rst, i_new_pc, i_clear_cache, i_stall_n, i_pc,
 				+(3<<(LGCACHELEN-2)))
 			&&(|r_nvalid[(LGCACHELEN):(LGCACHELEN-1)]);
 
-	initial	r_cache_base = RESET_ADDRESS;
+	initial	r_cache_base = RESET_ADDRESS[(AW+1):2];
 	always @(posedge i_clk)
 	begin
 		if ((i_rst)||(i_clear_cache)||((o_wb_cyc)&&(i_wb_err)))
@@ -294,6 +302,5 @@ module	pipefetch(i_clk, i_rst, i_new_pc, i_clear_cache, i_stall_n, i_pc,
 			ill_address <= o_wb_addr - {{(AW-LGCACHELEN-1){1'b0}}, r_acks_waiting};
 
 	assign	o_illegal = (o_pc == ill_address)&&(~i_rst)&&(~i_new_pc)&&(~i_clear_cache);
-
 
 endmodule

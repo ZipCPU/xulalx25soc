@@ -13,7 +13,7 @@ This project attempts to take two separate projects, the ZipCPU and Xess.com's X
 
 - Internal peripherals
 
-  - Real-time clock and date4
+  - Real-time clock and date
   - Access to the FPGA configuration port, for unattended updates
   - ZipCPU debug/configuration port access from JTAG
 
@@ -29,6 +29,9 @@ This project attempts to take two separate projects, the ZipCPU and Xess.com's X
 The SoC is fully functional.  Keeping the project from being complete, however,
 is the lack of an integrated specification document.  (Specification documents
 do exist, however, for many of the peripheral components.)
+
+**20170718 Update**: The ZipCPU has been upgraded to the 8-bit byte ISA,
+catching the distro up with the latest compiler.
 
 # Unique Features
 
@@ -57,3 +60,8 @@ cycle) every two clocks when pipelined.  Unlike many other dynamic memory
 controllers, this one was _not_ created from a proprietary, closed source,
 memory interface generation facility--so it is available for anyone to examine,
 study, and even comment upon and improve--subject to the conditions of the GPL.
+
+# Commercial Opportunities
+
+If the GPLv3 license is insufficient for your needs, other licenses can be
+purchased from Gisselquist Technology, LLC.

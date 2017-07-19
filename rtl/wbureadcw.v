@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // Filename:	wbureadcw.v
 //
@@ -15,9 +15,9 @@
 // Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015-2016, Gisselquist Technology, LLC
+// Copyright (C) 2015-2017, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -29,19 +29,24 @@
 // FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 // for more details.
 //
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
+//
 // License:	GPL, v3, as defined and found on www.gnu.org,
 //		http://www.gnu.org/licenses/gpl.html
 //
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 //
 // Goal: single clock pipeline, 50 slices or less
 //
 module	wbureadcw(i_clk, i_stb, i_valid, i_hexbits,
 			o_stb, o_codword);
-	input			i_clk, i_stb, i_valid;
-	input		[5:0]	i_hexbits;
+	input	wire		i_clk, i_stb, i_valid;
+	input	wire	[5:0]	i_hexbits;
 	output	reg		o_stb;
 	output	reg	[35:0]	o_codword;
 
@@ -59,6 +64,7 @@ module	wbureadcw(i_clk, i_stb, i_valid, i_hexbits,
 	//			Ready for next word
 
 	reg	[2:0]	r_len, cw_len;
+	reg	[1:0]	lastcw;
 
 	wire	w_stb;
 	assign	w_stb = ((r_len == cw_len)&&(cw_len != 0))
@@ -89,7 +95,6 @@ module	wbureadcw(i_clk, i_stb, i_valid, i_hexbits,
 		default: begin end
 		endcase
 
-	reg	[1:0]	lastcw;
 	always @(posedge i_clk)
 		if (o_stb)
 			lastcw <= o_codword[35:34];

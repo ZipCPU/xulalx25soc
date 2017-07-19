@@ -1,6 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-//
 // Filename: 	wbdmac.v
 //
 // Project:	Zip CPU -- a small, lightweight, RISC CPU soft core
@@ -78,12 +77,12 @@
 //		buffer by reading from bits 25..16 of this control/status
 //		register.
 //
-// Creator:	Dan Gisselquist
+// Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015-2016, Gisselquist Technology, LLC
+// Copyright (C) 2015-2017, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -95,11 +94,16 @@
 // FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 // for more details.
 //
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
+//
 // License:	GPL, v3, as defined and found on www.gnu.org,
 //		http://www.gnu.org/licenses/gpl.html
 //
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 //
 `define	DMA_IDLE	3'b000
@@ -117,13 +121,13 @@ module wbdmac(i_clk, i_rst,
 			i_mwb_ack, i_mwb_stall, i_mwb_data, i_mwb_err,
 		i_dev_ints,
 		o_interrupt);
-	parameter	ADDRESS_WIDTH=32, LGMEMLEN = 10,
+	parameter	ADDRESS_WIDTH=30, LGMEMLEN = 10,
 			DW=32, LGDV=5,AW=ADDRESS_WIDTH;
-	input			i_clk, i_rst;
+	input	wire		i_clk, i_rst;
 	// Slave/control wishbone inputs
-	input			i_swb_cyc, i_swb_stb, i_swb_we;
-	input	[1:0]		i_swb_addr;
-	input	[(DW-1):0]	i_swb_data;
+	input	wire		i_swb_cyc, i_swb_stb, i_swb_we;
+	input	wire	[1:0]	i_swb_addr;
+	input	wire [(DW-1):0]	i_swb_data;
 	// Slave/control wishbone outputs
 	output	reg		o_swb_ack;
 	output	wire		o_swb_stall;
@@ -133,11 +137,11 @@ module wbdmac(i_clk, i_rst,
 	output	reg [(AW-1):0]	o_mwb_addr;
 	output	reg [(DW-1):0]	o_mwb_data;
 	// Master/DMA wishbone responses from the bus
-	input			i_mwb_ack, i_mwb_stall;
-	input	[(DW-1):0]	i_mwb_data;
-	input			i_mwb_err;
+	input	wire		i_mwb_ack, i_mwb_stall;
+	input	wire [(DW-1):0]	i_mwb_data;
+	input	wire		i_mwb_err;
 	// The interrupt device interrupt lines
-	input	[(DW-1):0]	i_dev_ints;
+	input	wire [(DW-1):0]	i_dev_ints;
 	// An interrupt to be set upon completion
 	output	reg		o_interrupt;
 	// Need to release the bus for a higher priority user
@@ -193,7 +197,8 @@ module wbdmac(i_clk, i_rst,
 		begin
 			case(i_swb_addr)
 			2'b00: begin
-				if ((i_swb_data[31:16] == 16'h0fed)
+				if ((i_swb_data[27:16] == 12'hfed)
+					&&(i_swb_data[31:30] == 2'b00)
 						&&(cfg_len_nonzero))
 					dma_state <= `DMA_WAIT;
 				cfg_blocklen_sub_one
@@ -202,15 +207,15 @@ module wbdmac(i_clk, i_rst,
 					// i.e. -1;
 				cfg_dev_trigger    <= i_swb_data[14:10];
 				cfg_on_dev_trigger <= i_swb_data[15];
-				cfg_incs  <= ~i_swb_data[29];
-				cfg_incd  <= ~i_swb_data[28];
+				cfg_incs  <= !i_swb_data[29];
+				cfg_incd  <= !i_swb_data[28];
 				end
 			2'b01: begin
 				cfg_len   <=  i_swb_data[(AW-1):0];
 				cfg_len_nonzero <= (|i_swb_data[(AW-1):0]);
 				end
-			2'b10: cfg_raddr <=  i_swb_data[(AW-1):0];
-			2'b11: cfg_waddr <=  i_swb_data[(AW-1):0];
+			2'b10: cfg_raddr <=  i_swb_data[(AW+2-1):2];
+			2'b11: cfg_waddr <=  i_swb_data[(AW+2-1):2];
 			endcase
 		end end
 	`DMA_WAIT: begin
@@ -341,9 +346,10 @@ module wbdmac(i_clk, i_rst,
 
 	initial	o_interrupt = 1'b0;
 	always @(posedge i_clk)
-		o_interrupt <= (dma_state == `DMA_WRITE_ACK)&&(i_mwb_ack)
-				&&(last_write_ack)
-				&&(cfg_len == {{(AW-1){1'b0}},1'b1});
+		o_interrupt <= ((dma_state == `DMA_WRITE_ACK)&&(i_mwb_ack)
+					&&(last_write_ack)
+					&&(cfg_len == {{(AW-1){1'b0}},1'b1}))
+				||((dma_state != `DMA_IDLE)&&(i_mwb_err));
 
 	initial	cfg_err = 1'b0;
 	always @(posedge i_clk)
@@ -448,8 +454,8 @@ module wbdmac(i_clk, i_rst,
 					cfg_blocklen_sub_one
 					};
 		2'b01: o_swb_data <= { {(DW-AW){1'b0}}, cfg_len  };
-		2'b10: o_swb_data <= { {(DW-AW){1'b0}}, cfg_raddr};
-		2'b11: o_swb_data <= { {(DW-AW){1'b0}}, cfg_waddr};
+		2'b10: o_swb_data <= { {(DW-2-AW){1'b0}}, cfg_raddr, 2'b00 };
+		2'b11: o_swb_data <= { {(DW-2-AW){1'b0}}, cfg_waddr, 2'b00 };
 		endcase
 
 	// This causes us to wait a minimum of two clocks before starting: One
@@ -481,6 +487,13 @@ module wbdmac(i_clk, i_rst,
 			||((i_swb_stb)&&(i_swb_we)&&(dma_state != `DMA_IDLE)
 				&&(i_swb_addr == 2'b00)
 				&&(i_swb_data == 32'hafed0000));
+
+
+	// Make verilator happy
+	// verilator lint_off UNUSED
+	wire	unused;
+	assign	unused = i_swb_cyc;
+	// verilator lint_on  UNUSED
 
 endmodule
 

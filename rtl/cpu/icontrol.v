@@ -52,7 +52,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015, Gisselquist Technology, LLC
+// Copyright (C) 2015,2017, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -64,20 +64,28 @@
 // FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 // for more details.
 //
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
+//
 // License:	GPL, v3, as defined and found on www.gnu.org,
 //		http://www.gnu.org/licenses/gpl.html
 //
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
+//
+`default_nettype	none
+//
 module	icontrol(i_clk, i_reset, i_wr, i_proc_bus, o_proc_bus,
 		i_brd_ints, o_interrupt);
 	parameter	IUSED = 15;
-	input			i_clk, i_reset;
-	input			i_wr;
-	input		[31:0]	i_proc_bus;
+	input	wire		i_clk, i_reset;
+	input	wire		i_wr;
+	input	wire	[31:0]	i_proc_bus;
 	output	wire	[31:0]	o_proc_bus;
-	input		[(IUSED-1):0]	i_brd_ints;
+	input	wire	[(IUSED-1):0]	i_brd_ints;
 	output	wire		o_interrupt;
 
 	reg	[(IUSED-1):0]	r_int_state;
@@ -127,27 +135,12 @@ module	icontrol(i_clk, i_reset, i_wr, i_proc_bus, o_proc_bus,
 		assign o_proc_bus = { r_gie, r_int_enable, r_any, r_int_state };
 	end endgenerate
 
-	/*
-	reg	int_condition;
-	initial	int_condition      = 1'b0;
-	initial	o_interrupt_strobe = 1'b0;
-	always @(posedge i_clk)
-		if (i_reset)
-		begin
-			int_condition <= 1'b0;
-			o_interrupt_strobe <= 1'b0;
-		end else if (~r_interrupt) // This might end up generating
-		begin // many, many, (wild many) interrupts
-			int_condition <= 1'b0;
-			o_interrupt_strobe <= 1'b0;
-		end else if ((~int_condition)&&(r_interrupt))
-		begin
-			int_condition <= 1'b1;
-			o_interrupt_strobe <= 1'b1;
-		end else
-			o_interrupt_strobe <= 1'b0;
-	*/
-
 	assign	o_interrupt = r_interrupt;
+
+	// Make verilator happy
+	// verilator lint_off UNUSED
+	wire	[31:0]	unused;
+	assign	unused = i_proc_bus[31:0];
+	// verilator lint_on  UNUSED
 
 endmodule

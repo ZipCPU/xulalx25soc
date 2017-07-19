@@ -1,12 +1,11 @@
-`define	XULA25
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
 // Filename:	busmaster.v
 //
-// Project:	XuLA2 board
+// Project:	XuLA2-LX25 SoC based upon the ZipCPU
 //
 // Purpose:	This is the highest level, Verilator simulatable, portion of
-//		the XuLA2 core.  You should be able to successfully Verilate 
+//		the XuLA2 core.  You should be able to successfully Verilate
 //	this file, and then build a test bench that tests and proves the
 //	capability of anything within here.
 //
@@ -20,9 +19,9 @@
 // Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015, Gisselquist Technology, LLC
+// Copyright (C) 2015-2017, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -34,13 +33,20 @@
 // FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 // for more details.
 //
+// You should have received a copy of the GNU General Public License along
+// with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
+// target there if the PDF file isn't present.)  If not, see
+// <http://www.gnu.org/licenses/> for a copy.
+//
 // License:	GPL, v3, as defined and found on www.gnu.org,
 //		http://www.gnu.org/licenses/gpl.html
 //
 //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //
-
+//
+`default_nettype	none
+//
 //
 // Configuration question #1
 //
@@ -126,30 +132,30 @@ module	busmaster(i_clk, i_rst,
 		i_rx_uart, o_tx_uart);
 	parameter	ZIP_ADDRESS_WIDTH=24, NGPO=15, NGPI=15,
 			ZA=ZIP_ADDRESS_WIDTH;
-	input			i_clk, i_rst;
+	input	wire		i_clk, i_rst;
 	// The bus commander, via an external JTAG port
-	input			i_rx_stb;
-	input		[7:0]	i_rx_data;
+	input	wire		i_rx_stb;
+	input	wire	[7:0]	i_rx_data;
 	output	wire		o_tx_stb;
 	output	wire	[7:0]	o_tx_data;
 	input			i_tx_busy;
 	// SPI flash control
 	output	wire		o_sf_cs_n, o_sd_cs_n;
 	output	wire		o_spi_sck, o_spi_mosi;
-	input			i_spi_miso;
+	input	wire		i_spi_miso;
 	// SDRAM control
 	output	wire		o_ram_cs_n, o_ram_cke;
 	output	wire		o_ram_ras_n, o_ram_cas_n, o_ram_we_n;
 	output	wire	[12:0]	o_ram_addr;
 	output	wire	[1:0]	o_ram_bs;
 	output	wire		o_ram_drive_data;
-	input		[15:0]	i_ram_data;
+	input	wire	[15:0]	i_ram_data;
 	output	wire	[15:0]	o_ram_data;
 	output	wire	[1:0]	o_ram_dqm;
 	input 	[(NGPI-1):0]	i_gpio;
 	output wire [(NGPO-1):0] o_gpio;
 	output	wire		o_pwm;
-	input			i_rx_uart;
+	input	wire		i_rx_uart;
 	output	wire		o_tx_uart;
 
 
@@ -160,6 +166,7 @@ module	busmaster(i_clk, i_rst,
 	//
 	wire		wb_cyc, wb_stb, wb_we, wb_stall, wb_ack, wb_err;
 	wire	[31:0]	wb_data, wb_idata, wb_addr;
+	wire	[3:0]	wb_sel;
 
 	//
 	//
@@ -173,14 +180,13 @@ module	busmaster(i_clk, i_rst,
 	wire	[31:0]	wbu_addr, wbu_data;
 	// and then coming from devices
 	wire		wbu_ack, wbu_stall, wbu_err;
-	wire	[31:0]	wbu_idata;
 	// And then headed back home
 	wire	w_interrupt;
 	// Oh, and the debug control for the ZIP CPU
 	wire		wbu_zip_sel, zip_dbg_ack, zip_dbg_stall;
 	assign	wbu_zip_sel =((wbu_cyc)&&(wbu_addr[24]));
 	wire	[31:0]	zip_dbg_data;
-	wire		wbu_dbg;
+	wire	[3:0]	wbu_sel;
 	wbubus	genbus(i_clk, i_rx_stb, i_rx_data,
 			wbu_cyc, wbu_stb, wbu_we, wbu_addr, wbu_data,
 `ifdef	INCLUDE_ZIPCPU
@@ -188,14 +194,14 @@ module	busmaster(i_clk, i_rst,
 				||((wbu_zip_sel)&&(zip_dbg_ack)),
 			((~wbu_zip_sel)&&(wbu_stall))
 				||((wbu_zip_sel)&&(zip_dbg_stall)),
-				wbu_err, (wbu_zip_sel)?zip_dbg_data:dwb_idata,
+				wbu_err, (zip_dbg_ack)?zip_dbg_data:dwb_idata,
 `else
 			wbu_ack, wbu_stall,
 				wbu_err, dwb_idata,
 `endif
 			w_interrupt,
-			o_tx_stb, o_tx_data, i_tx_busy,
-			wbu_dbg);
+			o_tx_stb, o_tx_data, i_tx_busy);
+	assign	wbu_sel = 4'hf;
 
 
 	//
@@ -206,20 +212,22 @@ module	busmaster(i_clk, i_rst,
 	wire		zip_cyc, zip_stb, zip_we, zip_cpu_int;
 	wire	[(ZA-1):0]	w_zip_addr;
 	wire	[31:0]	zip_addr, zip_data;
+	wire	[3:0]	zip_sel;
 	// and then coming from devices
 	wire		zip_ack, zip_stall, zip_err;
 	wire	dwb_we, dwb_stb, dwb_cyc, dwb_ack, dwb_stall, dwb_err;
 	wire	[31:0]	dwb_addr, dwb_odata;
+	wire	[3:0]	dwb_sel;
 	wire	[8:0]	w_ints_to_zip_cpu;
 `ifdef	INCLUDE_ZIPCPU
 `ifdef	ZIP_SCOPE
 	wire	[31:0]	zip_debug;
 `endif
 `ifdef	XULA25
-	zipsystem #(24'h2000,ZA,10,1,9)
-		zippy(i_clk, 1'b0,
+	zipsystem #(32'h8000,ZA,10,1,9)
+		swic(i_clk, 1'b0,
 			// Zippys wishbone interface
-			zip_cyc, zip_stb, zip_we, w_zip_addr, zip_data,
+			zip_cyc, zip_stb, zip_we, w_zip_addr, zip_data, zip_sel,
 				zip_ack, zip_stall, dwb_idata, zip_err,
 			w_ints_to_zip_cpu, zip_cpu_int,
 			// Debug wishbone interface
@@ -232,10 +240,10 @@ module	busmaster(i_clk, i_rst,
 `endif
 			);
 `else
-	zipbones #(24'h2000,ZA,10,1)
-		zippy(i_clk, 1'b0,
+	zipbones #(32'h8000,ZA,10,1)
+		swic(i_clk, 1'b0,
 			// Zippys wishbone interface
-			zip_cyc, zip_stb, zip_we, w_zip_addr, zip_data,
+			zip_cyc, zip_stb, zip_we, w_zip_addr, zip_data, zip_sel,
 				zip_ack, zip_stall, dwb_idata, zip_err,
 			w_interrupt, zip_cpu_int,
 			// Debug wishbone interface
@@ -274,38 +282,39 @@ module	busmaster(i_clk, i_rst,
 	*/
 	wbpriarbiter #(32,32) wbu_zip_arbiter(i_clk,
 		// The ZIP CPU Master -- gets priority in the arbiter
-		zip_cyc, zip_stb, zip_we, zip_addr, zip_data,
+		zip_cyc, zip_stb, zip_we, zip_addr, zip_data, zip_sel,
 			zip_ack, zip_stall, zip_err,
 		// The JTAG interface Master, secondary priority,
 		// will suffer a 1clk delay in arbitration
 		(wbu_cyc)&&(~wbu_zip_sel), (wbu_stb)&&(~wbu_zip_sel), wbu_we,
-			wbu_addr, wbu_data,
+			wbu_addr, wbu_data, wbu_sel,
 			wbu_ack, wbu_stall, wbu_err,
 		// Common bus returns
-		dwb_cyc, dwb_stb, dwb_we, dwb_addr, dwb_odata,
+		dwb_cyc, dwb_stb, dwb_we, dwb_addr, dwb_odata, dwb_sel,
 			dwb_ack, dwb_stall, dwb_err);
 
-	// 
-	// 
+	//
+	//
 	// And because the ZIP CPU and the Arbiter create an unacceptable
 	// delay, we fail timing.  So we add in a delay cycle ...
-	// 
-	// 
+	//
+	//
 `ifdef	NO_ZIP_WBU_DELAY
 	assign	wb_cyc    = dwb_cyc;
 	assign	wb_stb    = dwb_stb;
 	assign	wb_we     = dwb_we;
 	assign	wb_addr   = dwb_addr;
 	assign	wb_data   = dwb_odata;
+	assign	wb_sel    = dwb_sel;
 	assign	dwb_idata = wb_idata;
 	assign	dwb_ack   = wb_ack;
 	assign	dwb_stall = wb_stall;
 	assign	dwb_err   = wb_err;
 `else
 	busdelay	wbu_zip_delay(i_clk,
-			dwb_cyc, dwb_stb, dwb_we, dwb_addr, dwb_odata,
+			dwb_cyc, dwb_stb, dwb_we, dwb_addr, dwb_odata, dwb_sel,
 				dwb_ack, dwb_stall, dwb_idata, dwb_err,
-			wb_cyc, wb_stb, wb_we, wb_addr, wb_data,
+			wb_cyc, wb_stb, wb_we, wb_addr, wb_data, wb_sel,
 				wb_ack, wb_stall, wb_idata, wb_err);
 `endif
 
@@ -326,9 +335,9 @@ module	busmaster(i_clk, i_rst,
 	assign	zip_dbg_stall = 1'b0;
 	assign	zip_dbg_data = 32'h000;
 
-	assign	dwb_addr = wbu_addr;
+	assign	dwb_addr  = wbu_addr;
 	assign	dwb_odata = wbu_data;
-	assign	dwb_we = wbu_we;
+	assign	dwb_we  = wbu_we;
 	assign	dwb_stb = (wbu_stb);
 	assign	dwb_cyc = (wbu_cyc);
 	assign	wb_cyc  = dwb_cyc;
@@ -336,6 +345,7 @@ module	busmaster(i_clk, i_rst,
 	assign	wb_we   = dwb_we;
 	assign	wb_addr = dwb_addr;
 	assign	wb_data = dwb_odata;
+	assign	wb_sel  = dwb_sel;
 	assign	wbu_ack = dwb_ack;
 	assign	wbu_stall = dwb_stall;
 	assign	dwb_idata = wb_idata;
@@ -346,7 +356,7 @@ module	busmaster(i_clk, i_rst,
 
 	wire	io_sel, pwm_sel, uart_sel, flash_sel, flctl_sel, scop_sel,
 			cfg_sel, mem_sel, sdram_sel, sdcard_sel,
-			none_sel, many_sel, io_bank;
+			none_sel, many_sel, many_ack, io_bank;
 	wire	io_ack, flash_ack, scop_ack, cfg_ack, mem_ack,
 			sdram_ack, sdcard_ack, uart_ack, pwm_ack;
 	wire	io_stall, flash_stall, scop_stall, cfg_stall, mem_stall,
@@ -372,28 +382,60 @@ module	busmaster(i_clk, i_rst,
 			||((flash_sel||flctl_sel)&&(flash_stall));
 			// (none_sel)&&(1'b0)
 
-	/*
-	assign	wb_idata = (io_ack)?io_data
-			: ((scop_ack)?scop_data
-			: ((cfg_ack)?cfg_data
-			: ((mem_ack)?mem_data
-			: ((flash_ack)?flash_data
-			: 32'h00))));
-	*/
+	//
+	// wb_idata
+	//
+	// This is the data returned on the bus.  Here, we select between a
+	// series of bus sources to select what data to return.  The basic
+	// logic is simply this: the data we return is the data for which the
+	// ACK line is high.
+	//
+	// The last item on the list is chosen by default if no other ACK's are
+	// true.  Although we might choose to return zeros in that case, by
+	// returning something we can skimp a touch on the logic.
+	//
+	// To add another device, add another ack check, and another closing
+	// parenthesis.
+	//
 	assign	wb_idata =  (io_ack|scop_ack)?((io_ack )? io_data  : scop_data)
 			: ((uart_ack|pwm_ack)?((uart_ack)?uart_data: pwm_data)
 			: ((cfg_ack) ? cfg_data
 			: ((sdram_ack|sdcard_ack)
 					?((sdram_ack)? sdram_data : sdcard_data)
 			: ((mem_ack)?mem_data:flash_data)))); // if (flash_ack)
+	//
+	// wb_err
+	//
+	// This is the bus error signal.  It should never be true, but practice
+	// teaches us otherwise.  Here, we allow for three basic errors:
+	//
+	// 1. STB is true, but no devices are selected
+	//
+	//	This is the null pointer reference bug.  If you try to access
+	//	something on the bus, at an address with no mapping, the bus
+	//	should produce an error--such as if you try to access something
+	//	at zero.
+	//
+	// 2. STB is true, and more than one device is selected
+	//
+	//	(This can be turned off, if you design this file well.  For
+	//	this line to be true means you have a design flaw.)
+	//
+	// 3. If more than one ACK is every true at any given time.
+	//
+	//	This is a bug of bus usage, combined with a subtle flaw in the
+	//	WB pipeline definition.  You can issue bus requests, one per
+	//	clock, and if you cross device boundaries with your requests,
+	//	you may have things come back out of order (not detected here)
+	//	or colliding on return (detected here).  The solution to this
+	//	problem is to make certain that any burst request does not cross
+	//	device boundaries.  This is a requirement of whoever (or
+	//	whatever) drives the bus.
+	//
 	assign	wb_err = ((wb_stb)&&(none_sel || many_sel))
 				|| ((wb_cyc)&&(many_ack));
 
 	// Addresses ...
-	//	0000 xxxx	configuration/control registers
-	//	001x xxxx	Down-sampler taps	(64 taps, 2 at a time)
-	//	1xxx xxxx	Up-sampler taps
-	//	1 xxxx xxxx xxxx xxxx xxxx	Up-sampler taps
 
 `define	SPEEDY_IO
 `ifndef	SPEEDY_IO
@@ -443,6 +485,17 @@ module	busmaster(i_clk, i_rst,
 
 `endif
 
+
+	//
+	// none_sel
+	//
+	// This wire is true if wb_stb is true and no device is selected.  This
+	// is an error condition, but here we present the logic to test for it.
+	//
+	//
+	// If you add another device, add another OR into the select lines
+	// associated with this term.
+	//
 	assign	none_sel =((wb_stb)&&(~
 			(io_sel
 			||uart_sel
@@ -454,6 +507,27 @@ module	busmaster(i_clk, i_rst,
 			||sdram_sel
 			||sdcard_sel
 			||flash_sel)));
+
+	//
+	// many_sel
+	//
+	// This should *never* be true .... unless you mess up your address
+	// decoding logic.  Since I've done that before, I test/check for it
+	// here.
+	//
+	// To add a new device here, simply add it to the list.  Make certain
+	// that the width of the add, however, is greater than the number
+	// of devices below.  Hence, for 3 devices, you will need an add
+	// at least 3 bits in width, for 7 devices you will need at least 4
+	// bits, etc.
+	//
+	// Because this add uses the {} operator, the individual components to
+	// it are by default unsigned ... just as we would like.
+	//
+	// There's probably another easier/better/faster/cheaper way to do this,
+	// but I haven't found any such that are also easier to adjust with
+	// new devices.  I'm open to options.
+	//
 	assign	many_sel =((wb_stb)&&(
 			 {3'h0, io_sel}
 			+{3'h0, uart_sel}
@@ -466,7 +540,16 @@ module	busmaster(i_clk, i_rst,
 			+{3'h0, sdcard_sel}
 			+{3'h0, flash_sel} > 1));
 
-	wire	many_ack;
+	//
+	// many_ack
+	//
+	// This is like none_sel, but it is applied to the ACK line, and gated
+	// by wb_cyc -- so that random things on the address line won't set this
+	// off.
+	//
+	// To add more items here, just do as you did for many_sel, but here
+	// with the (new) dev_ack line.
+	//
 	assign	many_ack =((wb_cyc)&&(
 			 {3'h0, io_ack}
 			+{3'h0, uart_ack}
@@ -479,10 +562,31 @@ module	busmaster(i_clk, i_rst,
 			+{3'h0, sdcard_ack}
 			+{3'h0, flash_ack} > 1));
 
+	//
+	// bus_err_addr
+	//
+	// We'd like to know, after the fact, what (if any) address caused a
+	// bus error.  So ... if we get a bus error, let's record the address
+	// on the bus for later analysis.
+	//
 	always @(posedge i_clk)
 		if (wb_err)
 			bus_err_addr <= wb_addr;
 
+	//
+	// Interrupt processing
+	//
+	// The I/O slave contains an interrupt processor on it.  It will tell
+	// us if any interrupts take place.  However, two of the interrupts
+	// we are interested in: FLASH (erase/program op complete) and SCOPE
+	// (trigger has gone off, and the SCOPE has stopped recording), are
+	// known out here rather than within the I/O slave.
+	//
+	// To add more interrupts, you can just add more parameters to the
+	// ioslave for the new interrupts.  Just be aware ... if you do so
+	// here, you'll have to look into reading those interrupts properly
+	// from the I/O slave as well.
+	//
 	wire		flash_interrupt, sdcard_interrupt, scop_interrupt,
 			uart_rx_int, uart_tx_int, pwm_int;
 	wire	[(NGPO-1):0]	w_gpio;
@@ -504,10 +608,6 @@ module	busmaster(i_clk, i_rst,
 				},
 			w_ints_to_zip_cpu,
 			w_interrupt);
-		// 8684
-		// 1'bx, 4'h0, scop_sel, scop_ack, ~scop_stall, 
-		//	wb_err, ~vga_interrupt, 2'b00, flash_interrupt
-	//
 
 	//
 	//	UART device
@@ -515,7 +615,7 @@ module	busmaster(i_clk, i_rst,
 	wire	[31:0]	uart_debug;
 	uartdev	serialport(i_clk, i_rx_uart, o_tx_uart,
 			wb_cyc, (wb_stb)&&(uart_sel), wb_we,
-					{ ~wb_addr[2], wb_addr[0]}, wb_data,
+					{ !wb_addr[2], wb_addr[0]}, wb_data,
 			uart_ack, uart_stall, uart_data,
 			uart_rx_int, uart_tx_int,
 			uart_debug);
@@ -551,7 +651,7 @@ module	busmaster(i_clk, i_rst,
 	assign	o_gpio = w_gpio;
 `endif
 
-			
+
 
 	//
 	//	FLASH MEMORY CONFIGURATION ACCESS
@@ -676,8 +776,9 @@ module	busmaster(i_clk, i_rst,
 	//	RAM MEMORY ACCESS
 	//
 `ifdef	IMPLEMENT_ONCHIP_RAM
-	memdev	#(13) ram(i_clk, wb_cyc, (wb_stb)&&(mem_sel), wb_we,
-			wb_addr[12:0], wb_data, mem_ack, mem_stall, mem_data);
+	memdev	#(15) ram(i_clk, wb_cyc, (wb_stb)&&(mem_sel), wb_we,
+				wb_addr[12:0], wb_data, wb_sel,
+			mem_ack, mem_stall, mem_data);
 `else
 	reg	r_mem_ack;
 	always @(posedge i_clk)
@@ -693,9 +794,9 @@ module	busmaster(i_clk, i_rst,
 	//
 	wire	[31:0]	sdram_debug;
 `ifndef	BYPASS_SDRAM_ACCESS
-	wbsdram	sdram(i_clk, 
+	wbsdram	sdram(i_clk,
 		wb_cyc, (wb_stb)&&(sdram_sel),
-			wb_we, wb_addr[22:0], wb_data,
+			wb_we, wb_addr[22:0], wb_data, wb_sel,
 			sdram_ack, sdram_stall, sdram_data,
 		o_ram_cs_n, o_ram_cke, o_ram_ras_n, o_ram_cas_n, o_ram_we_n,
 			o_ram_bs, o_ram_addr,
@@ -724,6 +825,11 @@ module	busmaster(i_clk, i_rst,
 	//
 	//
 	//
+	// The first scope is the flash scope.  To actually get this scope
+	// up and running, you'll need to uncomment the o_debug data from the
+	// wbspiflash module, and make certain it gets added to the port list,
+	// etc.  Once done, you can then enable FLASH_SCOPE and read/record
+	// values from that interaction.
 	//
 	wire	[31:0]	scop_flash_data;
 	wire	scop_flash_ack, scop_flash_stall, scop_flash_interrupt;
@@ -798,7 +904,7 @@ module	busmaster(i_clk, i_rst,
 `ifdef	SDRAM_SCOPE
 	wire		sdram_trigger;
 	assign	sdram_trigger = sdram_debug[18]; // sdram_sel;
-	
+
 	wbscope	#(5'hb) sdramscope(i_clk, 1'b1, sdram_trigger,
 			sdram_debug,
 			//{ sdram_trigger, wb_data[30:0] },
@@ -811,7 +917,7 @@ module	busmaster(i_clk, i_rst,
 `ifdef	UART_SCOPE
 	wire		uart_trigger;
 	assign	uart_trigger = uart_debug[31];
-	
+
 	// wbscopc #(5'ha) uartscope(i_clk,1'b1, uart_trigger, uart_debug[30:0],
 	wbscope	#(5'ha) uartscope(i_clk, 1'b1, uart_trigger, uart_debug[31:0],
 		// Wishbone interface
@@ -835,7 +941,7 @@ module	busmaster(i_clk, i_rst,
 	begin
 		pre_trigger_a <= (wb_stb)&&(wb_addr[31:0]==32'h010b);
 		pre_trigger_b <= (|wb_data[31:8]);
-		zip_trigger= (pre_trigger_a)&&(pre_trigger_b)||(zip_debug[31]);
+		zip_trigger<= (pre_trigger_a)&&(pre_trigger_b)||(zip_debug[31]);
 	end
 	wbscope	#(5'h9) zipscope(i_clk, 1'b1, zip_trigger,
 			zip_debug,
@@ -851,19 +957,72 @@ module	busmaster(i_clk, i_rst,
 	assign	scop_zip_interrupt = 1'b0;
 `endif
 
-
+	// Merge the various scopes back together for their response over the
+	// wishbone bus:
+	//
+	// First, combine their interrupt lines into a combined scope interrupt
+	// line.
+	//
+	// To add more scopes ... simple OR the new interrupt lines
+	// together with these others in this list.
+	//
 	assign	scop_interrupt = scop_flash_interrupt || scop_cfg_interrupt
 				|| scop_two_interrupt || scop_zip_interrupt;
+
+	//
+	// scop_ack
+	//
+	// The is the acknolegement returned by the scope.  To generate this,
+	// just OR all of the various acknowledgement lines together.  To add
+	// more scopes, just increase the number of things ORd together here.
+	//
 	assign	scop_ack   = scop_cfg_ack | scop_flash_ack | scop_two_ack | scop_zip_ack;
+
+	//
+	// scop_stall
+	//
+	// As written, the scopes NEVER stall.  This is more for form than
+	// anything else.  We allow a future scope developer to make a scope
+	// that might stall, and so we deal with stalls here.
+	//
+	// In particular, the stall logic is basically this:
+	// 	if the nth scope is selected, then return the stall line from
+	//		the nth scope.
+	// We don't check whether or not the scope is selected at all here,
+	// since the master stall line check using scop_stall checks that above.
+	// Note that we aren't testing whether or not the address matches the
+	// last stall to return its result, it will just be returned by default
+	// if no other addresses match.
+	//
+	// To add new scopes, just add their respective stall lines to the
+	// list.  Note, though, in so doing that the address comparison will
+	// need to be expanded from a single bit to more bits.
+	//
+	// (Adding scopes is expensive in terms of block RAM, therefore, I like
+	// to keep the number of scopes to a minimum, and just rebuild the
+	// design when I need more.)
+	//
 	assign	scop_stall = ((~wb_addr[2])?
 				((wb_addr[1])?scop_flash_stall:scop_cfg_stall)
 				: ((wb_addr[1])?scop_two_stall:scop_zip_stall));
+	//
+	// scop_data
+	//
+	// This is very similar to wb_idata above.  If a given item produces
+	// an ack, return the data from that item.
+	//
 	assign	scop_data  = ((scop_cfg_ack)?scop_cfg_data
 				: ((scop_flash_ack) ? scop_flash_data
 				: ((scop_two_ack) ? scop_two_data
 				: scop_zip_data)));
 
 
+	//
+	// Make Verilator -Wall happy
+	//
+	// verilator lint_off UNUSED
+	wire	[128:0]	unused;
+	assign	unused = { i_rst, uart_debug, sdspi_scope, cfg_scope, sdram_debug };
+	// verilator lint_on  UNUSED
 endmodule
 
-// 0x8684 interrupts ...???

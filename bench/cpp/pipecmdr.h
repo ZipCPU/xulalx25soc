@@ -78,7 +78,7 @@ template <class VA>	class	PIPECMDR : public TESTB<VA> {
 		m_skt = socket(AF_INET, SOCK_STREAM, 0);
 		if (m_skt < 0) {
 			perror("Could not allocate socket: ");
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 
 		// Set the reuse address option
@@ -87,7 +87,7 @@ template <class VA>	class	PIPECMDR : public TESTB<VA> {
 			er = setsockopt(m_skt, SOL_SOCKET, SO_REUSEADDR, &optv, sizeof(optv));
 			if (er != 0) {
 				perror("SockOpt Err:");
-				exit(-1);
+				exit(EXIT_FAILURE);
 			}
 		}
 
@@ -98,12 +98,12 @@ template <class VA>	class	PIPECMDR : public TESTB<VA> {
 	
 		if (bind(m_skt, (struct sockaddr *)&my_addr, sizeof(my_addr))!=0) {
 			perror("BIND FAILED:");
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 
 		if (listen(m_skt, 1) != 0) {
 			perror("Listen failed:");
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 	}
 
