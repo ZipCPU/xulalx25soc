@@ -1,3 +1,4 @@
+`define	XULA25
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Filename:	busmaster.v
@@ -21,7 +22,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015-2017, Gisselquist Technology, LLC
+// Copyright (C) 2015-2018, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -111,7 +112,7 @@
 `ifdef	INCLUDE_ZIPCPU
 `ifdef	VERILATOR
 `define	ZIP_SCOPE
-`else // VERILATOR
+`else // !VERILATOR
 `ifdef	XULA25
 // `define	ZIP_SCOPE
 `endif // XULA25
@@ -231,7 +232,7 @@ module	busmaster(i_clk, i_rst,
 				zip_ack, zip_stall, dwb_idata, zip_err,
 			w_ints_to_zip_cpu, zip_cpu_int,
 			// Debug wishbone interface
-			((wbu_cyc)&&(wbu_zip_sel)),
+			(wbu_cyc),
 				((wbu_stb)&&(wbu_zip_sel)),wbu_we, wbu_addr[0],
 				wbu_data,
 				zip_dbg_ack, zip_dbg_stall, zip_dbg_data
@@ -247,7 +248,7 @@ module	busmaster(i_clk, i_rst,
 				zip_ack, zip_stall, dwb_idata, zip_err,
 			w_interrupt, zip_cpu_int,
 			// Debug wishbone interface
-			((wbu_cyc)&&(wbu_zip_sel)),
+			(wbu_cyc),
 				((wbu_stb)&&(wbu_zip_sel)),wbu_we, wbu_addr[0],
 				wbu_data,
 				zip_dbg_ack, zip_dbg_stall, zip_dbg_data
@@ -269,17 +270,6 @@ module	busmaster(i_clk, i_rst,
 	// And an arbiter to decide who gets to access the bus
 	//
 	//
-	/*
-	wbarbiter #(32,32) wbu_zip_arbiter(i_clk, i_rst,
-		// The UART interface Master
-		wbu_addr, wbu_data, wbu_we, (wbu_stb)&&(~wbu_zip_sel),
-			(wbu_cyc)&&(~wbu_zip_sel), wbu_ack, wbu_stall, wbu_err,
-		// The ZIP CPU Master
-		zip_addr, zip_data, zip_we, zip_stb,
-			zip_cyc, zip_ack, zip_stall, zip_err,
-		// Common bus returns
-		dwb_addr,dwb_odata,dwb_we,dwb_stb, dwb_cyc, dwb_ack, dwb_stall, dwb_err);
-	*/
 	wbpriarbiter #(32,32) wbu_zip_arbiter(i_clk,
 		// The ZIP CPU Master -- gets priority in the arbiter
 		zip_cyc, zip_stb, zip_we, zip_addr, zip_data, zip_sel,
@@ -311,7 +301,7 @@ module	busmaster(i_clk, i_rst,
 	assign	dwb_stall = wb_stall;
 	assign	dwb_err   = wb_err;
 `else
-	busdelay	wbu_zip_delay(i_clk,
+	busdelay	wbu_zip_delay(i_clk, 1'b0,
 			dwb_cyc, dwb_stb, dwb_we, dwb_addr, dwb_odata, dwb_sel,
 				dwb_ack, dwb_stall, dwb_idata, dwb_err,
 			wb_cyc, wb_stb, wb_we, wb_addr, wb_data, wb_sel,
@@ -635,10 +625,11 @@ module	busmaster(i_clk, i_rst,
 `ifdef	FMHACK
 	wbfmtxhack	#(16'd1813)	// 44.1 kHz, user adjustable
 `else
-	wbpwmaudio	#(16'd1813,1,16)	// 44.1 kHz, user adjustable
+	// wbpwmaudio	#(16'd1813,1,16)	// 44.1 kHz, user adjustable
+	wbpwmaudio	#(16'h270f,0,16) //  8   kHz, fixed audio rate
 `endif
 
-`else
+`else	// XULA25
 	wbpwmaudio	#(16'h270f,0,16) //  8   kHz, fixed audio rate
 `endif
 		pwmdev(i_clk,
@@ -704,6 +695,10 @@ module	busmaster(i_clk, i_rst,
 	assign	sdcard_ack = r_sdcard_ack;
 	assign	sdcard_data = 32'h0000;
 	assign	sdcard_interrupt= 1'b0;
+	assign	sdcard_cs_n = 1'b1;
+	assign	sdcard_sck  = 1'b1;
+	assign	sdcard_mosi = 1'b1;
+	assign	sdspi_scope = 32'h00;
 `endif	// SDCARD_ACCESS
 
 
@@ -1023,6 +1018,13 @@ module	busmaster(i_clk, i_rst,
 	// verilator lint_off UNUSED
 	wire	[128:0]	unused;
 	assign	unused = { i_rst, uart_debug, sdspi_scope, cfg_scope, sdram_debug };
+	wire	[4:0] possibly_unused;
+	assign	possibly_unused = { spi_user, sdcard_grant, sdcard_cs_n,
+			sdcard_sck, sdcard_mosi };
+`ifndef	XULA25
+	wire	[9:0] bones_unused;
+	assign	bones_unused = { zip_cpu_int, w_ints_to_zip_cpu };
+`endif
 	// verilator lint_on  UNUSED
 endmodule
 

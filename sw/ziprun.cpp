@@ -68,6 +68,7 @@ void	usage(void) {
 "\t\tconnection using port PORT, rather than attempting a USB\n"
 "\t\tconnection.  If PORT is not given, %s:%d will be\n"
 "\t\tassumed as a default.\n"
+"\t-r\tActually start the CPU as well, instead of just loading it\n"
 "\t-u\tAccess the XuLA board via the USB connector [DEFAULT]\n"
 "\t-v\tVerbose\n",
 	FPGAHOST,FPGAPORT);
@@ -99,11 +100,19 @@ int main(int argc, char **argv) {
 				break;
 			case 'p':
 				use_usb = false;
-				if (isdigit(argv[argn+skp][2]))
+				if (isdigit(argv[argn+skp][2])) {
 					port = atoi(&argv[argn+skp][2]);
+					if (verbose)
+						printf("No port number given\n");
+				}
+				if (verbose)
+					printf("Using port %d instead of USB\n", port);
 				break;
 			case 'r':
 				start_when_finished = true;
+				if (verbose)
+					printf("Will start the CPU upon completion\n");
+				break;
 			case 'u':
 				use_usb = true;
 				break;
@@ -120,13 +129,17 @@ int main(int argc, char **argv) {
 		} else {
 			// Anything here must be either the program to load,
 			// or a bit file to load
+			printf("%s must be some other arg\n", argv[argn]);
 			argv[argn] = argv[argn+skp];
 		}
 	} argc -= skp;
 
 
 	for(int argn=0; argn<argc; argn++) {
+		if (verbose) printf("Re-examining argument: %s\n", argv[argn]);
 		if (iself(argv[argn])) {
+			if (verbose)
+				printf("%s is an ELF file\n", argv[argn]);
 			if (execfile) {
 				printf("Too many executable files given, %s and %s\n", execfile, argv[argn]);
 				usage();
@@ -330,24 +343,24 @@ int main(int argc, char **argv) {
 		if (m_fpga) m_fpga->readio(R_VERSION); // Check for bus errors
 
 		// Now ... how shall we start this CPU?
+		printf("Clearing the CPUs registers\n");
+		for(int i=0; i<32; i++) {
+			m_fpga->writeio(R_ZIPCTRL, CPU_HALT|i);
+			m_fpga->writeio(R_ZIPDATA, 0);
+		}
+
+		m_fpga->writeio(R_ZIPCTRL, CPU_HALT|CPU_CLRCACHE);
+		printf("Setting PC to %08x\n", entry);
+		m_fpga->writeio(R_ZIPCTRL, CPU_HALT|CPU_sPC);
+		m_fpga->writeio(R_ZIPDATA, entry);
+
 		if (start_when_finished) {
-			printf("Clearing the CPUs registers\n");
-			for(int i=0; i<32; i++) {
-				m_fpga->writeio(R_ZIPCTRL, CPU_HALT|i);
-				m_fpga->writeio(R_ZIPDATA, 0);
-			}
-
-			m_fpga->writeio(R_ZIPCTRL, CPU_HALT|CPU_CLRCACHE);
-			printf("Setting PC to %08x\n", entry);
-			m_fpga->writeio(R_ZIPCTRL, CPU_HALT|CPU_sPC);
-			m_fpga->writeio(R_ZIPDATA, entry);
-
 			printf("Starting the CPU\n");
 			m_fpga->writeio(R_ZIPCTRL, CPU_GO|CPU_sPC);
 		} else {
 			printf("The CPU should be fully loaded, you may now\n");
 			printf("start it (from reset/reboot) with:\n");
-			printf("> wbregs cpu 0x40\n");
+			printf("> wbregs cpu 0x0f\n");
 			printf("\n");
 		}
 	} catch(BUSERR a) {

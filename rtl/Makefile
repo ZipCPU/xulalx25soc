@@ -44,7 +44,7 @@ CXX   := g++
 FBDIR := .
 VDIRFB:= $(FBDIR)/obj_dir
 VERILATOR := verilator
-VFLAGS     = -MMD -Wall -trace -Mdir $(VDIRFB) -y cpu -cc
+VFLAGS   = -MMD -O3 -Wall -trace -Mdir $(VDIRFB) -y cpu -cc
 
 .PHONY: test
 test: $(VDIRFB)/Vbusmaster__ALL.a

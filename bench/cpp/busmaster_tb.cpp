@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2015-2017, Gisselquist Technology, LLC
+// Copyright (C) 2015-2018, Gisselquist Technology, LLC
 //
 // This program is free software (firmware): you can redistribute it and/or
 // modify it under the terms of  the GNU General Public License as published
@@ -54,6 +54,7 @@
 #define	CPUDEFS_XULA25
 #endif
 
+
 #include "design.h"
 #ifdef	XULA25
 #ifndef	CPUDEFS_XULA25
@@ -77,130 +78,194 @@
 
 #include "port.h"
 
+#ifdef	NEW_VERILATOR
+#define	VVAR(A)	busmaster__DOT_ ## A
+#else
+#define	VVAR(A)	v__DOT_ ## A
+#endif
+#define	CPUVAR(A)		VVAR(_swic__DOT__thecpu__DOT_ ## A)
 
-#define	sd_cmd_busy	v__DOT__sdcardi__DOT__r_cmd_busy
-#define	sd_clk		v__DOT__sdcardi__DOT__r_sdspi_clk
-#define	sd_cmd_state	v__DOT__sdcardi__DOT__r_cmd_state
-#define	sd_rsp_state	v__DOT__sdcardi__DOT__r_rsp_state
-#define	sd_ll_cmd_stb	v__DOT__sdcard__DOT__ll_cmd_stb
-#define	sd_ll_cmd_dat	v__DOT__sdcard__DOT__ll_cmd_dat
-#define	sd_ll_z_counter	v__DOT__sdcard__DOT__lowlevel__DOT__r_z_counter
-#define	sd_ll_clk_counter	v__DOT__sdcard__DOT__lowlevel__DOT__r_clk_counter
-#define	sd_ll_idle	v__DOT__sdcard__DOT__lowlevel__DOT__r_idle
-#define	sd_ll_state	v__DOT__sdcard__DOT__lowlevel__DOT__r_state
-#define	sd_ll_byte	v__DOT__sdcard__DOT__lowlevel__DOT__r_byte
-#define	sd_ll_ireg	v__DOT__sdcard__DOT__lowlevel__DOT__r_ireg
-#define	sd_ll_out_stb	v__DOT__sdcard__DOT__ll_out_stb
-#define	sd_ll_out_dat	v__DOT__sdcard__DOT__ll_out_dat
-#define	sd_lgblklen	v__DOT__sdcard__DOT__r_lgblklen
-#define	sd_fifo_rd_crc	v__DOT__sdcard__DOT__fifo_rd_crc_reg
-#define	sd_cmd_crc	v__DOT__sdcard__DOT__r_cmd_crc,
-#define	sd_cmd_crc_cnt	v__DOT__sdcard__DOT__r_cmd_crc_cnt
-#define	sd_fifo_rd_crc_stb	v__DOT__sdcard__DOT__fifo_rd_crc_stb
-#define	ll_fifo_pkt_state	v__DOT__sdcard__DOT__ll_fifo_pkt_state
-#define	sd_have_data_response_token	v__DOT__sdcard__DOT__r_have_data_response_token
-#define	sd_fifo_wr_crc		v__DOT__sdcard__DOT__fifo_wr_crc_reg
-#define	sd_fifo_wr_crc_stb	v__DOT__sdcard__DOT__fifo_wr_crc_stb,
-#define	sd_ll_fifo_wr_state	v__DOT__sdcard__DOT__ll_fifo_wr_state,
-#define	sd_ll_fifo_wr_complete	v__DOT__sdcard__DOT__ll_fifo_wr_complete
-#define	sd_use_fifo	v__DOT__sdcard__DOT__r_use_fifo
-#define	sd_fifo_wr	v__DOT__sdcard__DOT__r_fifo_wr
 
-#define	block_ram	v__DOT__ram__DOT__mem
-#define	cpu_cmd_halt	v__DOT__swic__DOT__cmd_halt
-#define	cpu_iflags	v__DOT__swic__DOT__thecpu__DOT__w_iflags
-#define	cpu_uflags	v__DOT__swic__DOT__thecpu__DOT__w_uflags
-#define	cpu_cmd_addr	v__DOT__swic__DOT__cmd_addr
+#define	sd_cmd_busy	VVAR(_sdcardi__DOT__r_cmd_busy)
+#define	sd_clk		VVAR(_sdcardi__DOT__r_sdspi_clk)
+#define	sd_cmd_state	VVAR(_sdcardi__DOT__r_cmd_state)
+#define	sd_rsp_state	VVAR(_sdcardi__DOT__r_rsp_state)
+#define	sd_ll_cmd_stb	VVAR(_sdcard__DOT__ll_cmd_stb)
+#define	sd_ll_cmd_dat	VVAR(_sdcard__DOT__ll_cmd_dat)
+#define	sd_ll_z_counter	VVAR(_sdcard__DOT__lowlevel__DOT__r_z_counter)
+#define	sd_ll_clk_counter	VVAR(_sdcard__DOT__lowlevel__DOT__r_clk_counter)
+#define	sd_ll_idle	VVAR(_sdcard__DOT__lowlevel__DOT__r_idle)
+#define	sd_ll_state	VVAR(_sdcard__DOT__lowlevel__DOT__r_state)
+#define	sd_ll_byte	VVAR(_sdcard__DOT__lowlevel__DOT__r_byte)
+#define	sd_ll_ireg	VVAR(_sdcard__DOT__lowlevel__DOT__r_ireg)
+#define	sd_ll_out_stb	VVAR(_sdcard__DOT__ll_out_stb)
+#define	sd_ll_out_dat	VVAR(_sdcard__DOT__ll_out_dat)
+#define	sd_lgblklen	VVAR(_sdcard__DOT__r_lgblklen)
+#define	sd_fifo_rd_crc	VVAR(_sdcard__DOT__fifo_rd_crc_reg)
+#define	sd_cmd_crc	VVAR(_sdcard__DOT__r_cmd_crc,)
+#define	sd_cmd_crc_cnt	VVAR(_sdcard__DOT__r_cmd_crc_cnt)
+#define	sd_fifo_rd_crc_stb	VVAR(_sdcard__DOT__fifo_rd_crc_stb)
+#define	ll_fifo_pkt_state	VVAR(_sdcard__DOT__ll_fifo_pkt_state)
+#define	sd_have_data_response_token	VVAR(_sdcard__DOT__r_have_data_response_token)
+#define	sd_fifo_wr_crc		VVAR(_sdcard__DOT__fifo_wr_crc_reg)
+#define	sd_fifo_wr_crc_stb	VVAR(_sdcard__DOT__fifo_wr_crc_stb,)
+#define	sd_ll_fifo_wr_state	VVAR(_sdcard__DOT__ll_fifo_wr_state,)
+#define	sd_ll_fifo_wr_complete	VVAR(_sdcard__DOT__ll_fifo_wr_complete)
+#define	sd_use_fifo	VVAR(_sdcard__DOT__r_use_fifo)
+#define	sd_fifo_wr	VVAR(_sdcard__DOT__r_fifo_wr)
+
+#define	block_ram	VVAR(_ram__DOT__mem)
+#define	cpu_cmd_halt	VVAR(_swic__DOT__cmd_halt)
+#define	cpu_iflags	VVAR(_swic__DOT__thecpu__DOT__w_iflags)
+#define	cpu_uflags	VVAR(_swic__DOT__thecpu__DOT__w_uflags)
+#define	cpu_cmd_addr	VVAR(_swic__DOT__cmd_addr)
 // CPU globals
-#define	cpu_break 	v__DOT__swic__DOT__cpu_break
-#define	cpu_ipc		v__DOT__swic__DOT__thecpu__DOT__ipc
-#define	cpu_upc		v__DOT__swic__DOT__thecpu__DOT__r_upc
-#define	cpu_gie		v__DOT__swic__DOT__thecpu__DOT__r_gie
-#define	cpu_regs	v__DOT__swic__DOT__thecpu__DOT__regset
-#define	cpu_bus_err	v__DOT__swic__DOT__thecpu__DOT__bus_err
-#define	cpu_ibus_err	v__DOT__swic__DOT__thecpu__DOT__ibus_err_flag
-#define	cpu_ubus_err	v__DOT__swic__DOT__thecpu__DOT__r_ubus_err_flag
-#define	cpu_sleep	v__DOT__swic__DOT__thecpu__DOT__sleep
+#define	cpu_break 	VVAR(_swic__DOT__cpu_break)
+#define	cpu_ipc		CPUVAR(_ipc)
+#define	cpu_upc		CPUVAR(_SET_USER_PC__DOT__r_upc)
+#define	cpu_gie		CPUVAR(_SET_GIE__DOT__r_gie)
+#define	cpu_regs	CPUVAR(_regset)
+#define	cpu_bus_err	CPUVAR(_bus_err)
+#define	cpu_ibus_err	CPUVAR(_ibus_err_flag)
+#define	cpu_ubus_err	CPUVAR(_SET_USER_BUSERR__DOT__r_ubus_err_flag)
+#define	cpu_sleep	CPUVAR(_sleep)
 //
-#define	cpu_pf_pc	v__DOT__swic__DOT__thecpu__DOT__pf_pc
-#define	cpu_pf_cyc	v__DOT__swic__DOT__thecpu__DOT__pf_cyc
-#define	cpu_pf_illegal	v__DOT__swic__DOT__thecpu__DOT__pf_illegal
-#define	cpu_pf_valid	v__DOT__swic__DOT__thecpu__DOT__pf_valid
-#define	cpu_pf_instruction   v__DOT__swic__DOT__thecpu__DOT__pf_instruction
-#define	cpu_pf_instruction_pc v__DOT__swic__DOT__thecpu__DOT__pf_instruction_pc
+#define	cpu_pf_pc	VVAR(_swic__DOT__thecpu__DOT__pf_pc)
+#define	cpu_pf_cyc	VVAR(_swic__DOT__thecpu__DOT__pf_cyc)
+#define	cpu_pf_illegal	VVAR(_swic__DOT__thecpu__DOT__pf_illegal)
+#define	cpu_pf_valid	VVAR(_swic__DOT__thecpu__DOT__pf_valid)
+#define	cpu_pf_instruction   VVAR(_swic__DOT__thecpu__DOT__pf_instruction)
+#define	cpu_pf_instruction_pc VVAR(_swic__DOT__thecpu__DOT__pf_instruction_pc)
 //
-#define	cpu_early_branch v__DOT__swic__DOT__thecpu__DOT__instruction_decoder__DOT__genblk3__DOT__r_early_branch
-#define	cpu_branch_pc	v__DOT__swic__DOT__thecpu__DOT__instruction_decoder__DOT__genblk3__DOT__r_branch_pc
+#define	cpu_early_branch CPUVAR(_instruction_decoder__DOT__GEN_EARLY_BRANCH_LOGIC__DOT__r_early_branch)
+#define	cpu_branch_pc	CPUVAR(_instruction_decoder__DOT__GEN_EARLY_BRANCH_LOGIC__DOT__r_branch_pc)
 //
-#define	cpu_dcd_pc	v__DOT__swic__DOT__thecpu__DOT__dcd_pc
-#define	cpu_dcd_valid	v__DOT__swic__DOT__thecpu__DOT__instruction_decoder__DOT__r_valid
+#define	cpu_dcd_pc	CPUVAR(_dcd_pc)
+#define	cpu_dcd_valid	CPUVAR(_instruction_decoder__DOT__r_valid)
 //
-#define	cpu_op_ce	v__DOT__swic__DOT__thecpu__DOT__op_ce
-#define	cpu_op_valid	v__DOT__swic__DOT__thecpu__DOT__op_valid
-#define	cpu_op_valid_mem	v__DOT__swic__DOT__thecpu__DOT__op_valid_mem
-#define	cpu_op_valid_alu	v__DOT__swic__DOT__thecpu__DOT__op_valid_alu
-#define	cpu_op_valid_div	v__DOT__swic__DOT__thecpu__DOT__op_valid_div
-#define	cpu_op_valid_fpu	v__DOT__swic__DOT__thecpu__DOT__op_valid_fpu
-#define	cpu_op_lock	v__DOT__swic__DOT__thecpu__DOT__genblk3__DOT__r_op_lock
-#define	cpu_op_sim	v__DOT__swic__DOT__thecpu__DOT__op_sim
-#define	cpu_sim_immv	v__DOT__swic__DOT__thecpu__DOT__op_sim_immv
-#define	cpu_op_pc	v__DOT__swic__DOT__thecpu__DOT__op_pc
+#define	cpu_op_ce	CPUVAR(_op_ce)
+#define	cpu_op_valid	CPUVAR(_op_valid)
+#define	cpu_op_valid_mem	CPUVAR(_op_valid_mem)
+#define	cpu_op_valid_alu	CPUVAR(_op_valid_alu)
+#define	cpu_op_valid_div	CPUVAR(_op_valid_div)
+#define	cpu_op_valid_fpu	CPUVAR(_op_valid_fpu)
+#define	cpu_op_lock	CPUVAR(_OPLOCK__DOT__r_op_lock)
+#define	cpu_op_sim	CPUVAR(_op_sim)
+#define	cpu_sim_immv	CPUVAR(_op_sim_immv)
+#define	cpu_op_pc	CPUVAR(_op_pc)
 //
-#define	cpu_alu_pc	v__DOT__swic__DOT__thecpu__DOT__r_alu_pc
-#define	cpu_alu_ce	v__DOT__swic__DOT__thecpu__DOT__alu_ce
-#define	cpu_alu_wR	v__DOT__swic__DOT__thecpu__DOT__alu_wR
-#define	cpu_alu_reg	v__DOT__swic__DOT__thecpu__DOT__alu_reg
-#define	cpu_alu_valid	v__DOT__swic__DOT__thecpu__DOT__alu_valid
+#define	cpu_alu_pc	CPUVAR(_GEN_ALU_PC__DOT__r_alu_pc)
+#define	cpu_alu_ce	CPUVAR(_alu_ce)
+#define	cpu_alu_wR	CPUVAR(_alu_wR)
+#define	cpu_alu_reg	CPUVAR(_alu_reg)
+#define	cpu_alu_valid	CPUVAR(_alu_valid)
 //
-#define	cpu_div_valid	v__DOT__swic__DOT__thecpu__DOT__div_valid
+#define	cpu_div_valid	CPUVAR(_div_valid)
 //
-#define	cpu_mem_rdaddr	v__DOT__swic__DOT__thecpu__DOT__domem__DOT__rdaddr
-#define	cpu_mem_wraddr	v__DOT__swic__DOT__thecpu__DOT__domem__DOT__wraddr
-#define	cpu_mem_wreg	v__DOT__swic__DOT__thecpu__DOT__mem_wreg
-#define	cpu_new_pc	v__DOT__swic__DOT__thecpu__DOT__new_pc
+#define	cpu_mem_rdaddr	CPUVAR(_domem__DOT__rdaddr)
+#define	cpu_mem_wraddr	CPUVAR(_domem__DOT__wraddr)
+#define	cpu_mem_wreg	CPUVAR(_mem_wreg)
+#define	cpu_new_pc	CPUVAR(_new_pc)
 //
-#define	cpu_upc		v__DOT__swic__DOT__thecpu__DOT__r_upc
-#define	cpu_wr_reg_ce	v__DOT__swic__DOT__thecpu__DOT__wr_reg_ce
-#define	cpu_wr_flags_ce	v__DOT__swic__DOT__thecpu__DOT__wr_flags_ce
-#define	cpu_wr_reg_id	v__DOT__swic__DOT__thecpu__DOT__wr_reg_id
-#define	cpu_wr_gpreg_vl	v__DOT__swic__DOT__thecpu__DOT__wr_gpreg_vl
+#define	cpu_wr_reg_ce	CPUVAR(_wr_reg_ce)
+#define	cpu_wr_flags_ce	CPUVAR(_wr_flags_ce)
+#define	cpu_wr_reg_id	CPUVAR(_wr_reg_id)
+#define	cpu_wr_gpreg_vl	CPUVAR(_wr_gpreg_vl)
+#define	cpu_wr_spreg_vl	CPUVAR(_wr_spreg_vl)
 //
-#define	v__DOT__wb_addr		v__DOT__dwb_addr
-#define	v__DOT__dwb_stall	v__DOT__wb_stall
-#define	v__DOT__dwb_ack		v__DOT__wb_ack
-#define	v__DOT__wb_cyc		v__DOT__dwb_cyc
-#define	v__DOT__wb_stb		v__DOT__dwb_stb
-#define	v__DOT__wb_we		v__DOT__dwb_we
-#define	v__DOT__dwb_idata	v__DOT__wb_idata
-#define	v__DOT__wb_data		v__DOT__dwb_odata
+// #define	VVAR(_wb_addr)		VVAR(_dwb_addr)
+// #define	VVAR(_dwb_stall)	VVAR(_wb_stall)
+// #define	VVAR(_dwb_ack)		VVAR(_wb_ack)
+// #define	VVAR(_wb_cyc)		VVAR(_dwb_cyc)
+// #define	VVAR(_wb_stb)		VVAR(_dwb_stb)
+// #define	VVAR(_wb_we)		VVAR(_dwb_we)
+// #define	VVAR(_dwb_idata)	VVAR(_wb_idata)
+// #define	VVAR(_wb_data)		VVAR(_dwb_odata)
 //
-#define	wb_addr		v__DOT__dwb_addr
-#define	wb_stall	v__DOT__wb_stall
-#define	wb_ack		v__DOT__wb_ack
-#define	wb_cyc		v__DOT__dwb_cyc
-#define	wb_stb		v__DOT__dwb_stb
-#define	wb_we		v__DOT__dwb_we
-#define	wb_err		v__DOT__wb_err
-#define	wb_idata	v__DOT__wb_idata
-#define	wb_data		v__DOT__dwb_odata
+#define	wb_addr		VVAR(_dwb_addr)
+#define	wb_stall	VVAR(_wb_stall)
+#define	wb_ack		VVAR(_wb_ack)
+#define	wb_cyc		VVAR(_dwb_cyc)
+#define	wb_stb		VVAR(_dwb_stb)
+#define	wb_we		VVAR(_dwb_we)
+#define	wb_err		VVAR(_wb_err)
+#define	wb_idata	VVAR(_wb_idata)
+#define	wb_data		VVAR(_dwb_odata)
 //
-#define	sdram_clocks_til_idle v__DOT__sdram__DOT__clocks_til_idle
-#define	cpu_pf_illegal	v__DOT__swic__DOT__thecpu__DOT__pf_illegal
-#define	cpu_dcd_illegal	v__DOT__swic__DOT__thecpu__DOT__dcd_illegal
+#define	sdram_clocks_til_idle	VVAR(_sdram__DOT__clocks_til_idle)
+#define	cpu_pf_illegal		VVAR(_swic__DOT__thecpu__DOT__pf_illegal)
+#define	cpu_dcd_illegal		VVAR(_swic__DOT__thecpu__DOT__dcd_illegal)
 //
-#define	cpu_op_stall	v__DOT__swic__DOT__thecpu__DOT__op_stall
-#define	cpu_op_stall	v__DOT__swic__DOT__thecpu__DOT__op_stall
-#define	cpu_op_illegal	v__DOT__swic__DOT__thecpu__DOT__op_illegal
-#define	cpu_pf_lastpc	v__DOT__swic__DOT__thecpu__DOT__pf__DOT__r_lastpc
-#define	cpu_pf_rvsrc	v__DOT__swic__DOT__thecpu__DOT__pf__DOT__rvsrc
-#define	tx_zero_baud_counter v__DOT__serialport__DOT__txmod__DOT__zero_baud_counter
-#define	tx_baud_counter		v__DOT__serialport__DOT__txmod__DOT__baud_counter
-#define	cpu_ubreak	v__DOT__swic__DOT__thecpu__DOT__r_ubreak
-#define	cpu_switch_to_interrupt	v__DOT__swic__DOT__thecpu__DOT__w_switch_to_interrupt
-#define	pic_interrupt	v__DOT__swic__DOT__genblk10__DOT__pic__DOT__r_interrupt
-#define	apic_interrupt	v__DOT__swic__DOT__genblk7__DOT__ctri__DOT__r_interrupt
-#define	main_int_vector	v__DOT__swic__DOT__main_int_vector
-#define	alt_int_vector	v__DOT__swic__DOT__alt_int_vector
+#define	cpu_op_stall		VVAR(_swic__DOT__thecpu__DOT__op_stall)
+#define	cpu_op_stall		VVAR(_swic__DOT__thecpu__DOT__op_stall)
+#define	cpu_op_illegal		VVAR(_swic__DOT__thecpu__DOT__op_illegal)
+#define	cpu_pf_lastpc		VVAR(_swic__DOT__thecpu__DOT__pf__DOT__r_lastpc)
+#define	cpu_pf_rvsrc		VVAR(_swic__DOT__thecpu__DOT__pf__DOT__rvsrc)
+#define	tx_zero_baud_counter VVAR(_serialport__DOT__txmod__DOT__zero_baud_counter)
+#define	tx_baud_counter		VVAR(_serialport__DOT__txmod__DOT__baud_counter)
+#define	cpu_ubreak		CPUVAR(_SET_TRAP_N_UBREAK__DOT__r_ubreak)
+#define	cpu_switch_to_interrupt	VVAR(_swic__DOT__thecpu__DOT__w_switch_to_interrupt)
+#define	pic_interrupt		VVAR(_swic__DOT__MAIN_PIC__DOT__pic__DOT__r_interrupt)
+#define	apic_interrupt		VVAR(_swic__DOT__ALT_PIC__DOT__ctri__DOT__r_interrupt)
+#define	main_int_vector		VVAR(_swic__DOT__main_int_vector)
+#define	alt_int_vector		VVAR(_swic__DOT__alt_int_vector)
+
+#define	sdram_state		VVAR(_sdram__DOT__m_state)
+#define	sdram_refresh_clk	VVAR(_sdram__DOT__refresh_clk)
+#define	sdram_need_refresh	VVAR(_sdram__DOT__need_refresh)
+#define	sdram_bank_active	VVAR(_sdram__DOT__bank_active)
+#define	sdram_bank_row		VVAR(_sdram__DOT__bank_row)
+#define	sdram_barrell_ack	VVAR(_sdram__DOT__r_barrell_ack)
+#define	sdram_bus_cyc		VVAR(_sdram__DOT__bus_cyc)
+#define	sdram_r_pending		VVAR(_sdram__DOT__r_pending)
+#define	sdram_r_we		VVAR(_sdram__DOT__r_we)
+#define	sdram_r_data		VVAR(_sdram__DOT__r_data)
+#define	sdram_data		VVAR(_sdram_data)
+#define	sdram_r_addr		VVAR(_sdram__DOT__r_addr)
+#define	cpu_op_pipe		CPUVAR(_GEN_OP_PIPE__DOT__r_op_pipe)
+#define	cpu_break_pending	CPUVAR(_GEN_PENDING_BREAK__DOT__r_break_pending)
+#define	cpu_op_break		CPUVAR(_r_op_break)
+#define	cpu_dcd_illegal		VVAR(_swic__DOT__thecpu__DOT__dcd_illegal)
+#define	cpu_cyc_gbl		VVAR(_swic__DOT__thecpu__DOT__genblk26__DOT__MEM__DOT__domem__DOT__r_wb_cyc_gbl)
+#define	cpu_cyc_lcl		VVAR(_swic__DOT__thecpu__DOT__genblk26__DOT__MEM__DOT__domem__DOT__r_wb_cyc_lcl)
+#define	cpu_lcl_cyc		VVAR(_swic__DOT__cpu_lcl_cyc)
+#define	cpu_halted		VVAR(_swic__DOT__thecpu__DOT__r_halted)
+#define	cpu_alu_busy		CPUVAR(_doalu__DOT__r_busy)
+#define	cpu_alu_illegal		CPUVAR(_r_alu_illegal)
+#define	cpu_div_busy		CPUVAR(_div_busy)
+#define	cpu_div_error		CPUVAR(_div_error)
+#define	sdram_r_pending	VVAR(_sdram__DOT__r_pending)
+
+#define	wbu_cyc		VVAR(_wbu_cyc)
+#define	wbu_stb		VVAR(_wbu_stb)
+#define	wbu_we		VVAR(_wbu_we)
+
+#define	dwb_cyc		VVAR(_dwb_cyc)
+#define	ext_cyc		VVAR(_swic__DOT__ext_cyc)
+#define	exec_stb	VVAR(_genbus__DOT__exec_stb)
+#ifdef	XULA25
+#define	pic_gie		VVAR(_swic__DOT__MAIN_PIC__DOT__pic__DOT__r_gie)
+#define	pic_any		VVAR(_swic__DOT__MAIN_PIC__DOT__pic__DOT__w_any)
+#define	pic_int_enable	VVAR(_swic__DOT__MAIN_PIC__DOT__pic__DOT__r_int_enable)
+#define	pic_int_state	VVAR(_swic__DOT__MAIN_PIC__DOT__pic__DOT__r_int_state)
+#endif
+#define	uart_tx_zero_baud	VVAR(_serialport__DOT__txmod__DOT__zero_baud_counter)
+#define	uart_tx_busy		VVAR(_serialport__DOT__txmod__DOT__r_busy)
+#define	uart_tx_data		VVAR(_serialport__DOT__txmod__DOT__lcl_data)
+#define	uart_tx_counter		VVAR(_serialport__DOT__txmod__DOT__baud_counter)
+#define	uart_tx_state		VVAR(_serialport__DOT__txmod__DOT__state)
+#define	arbiter_owner	VVAR(_wbu_zip_arbiter__DOT__r_a_owner)
+#define	wbu_stb		VVAR(_wbu_stb)
+#define	cpu_mem_stb	VVAR(_swic__DOT__thecpu__DOT__mem_stb_gbl)
+#define	dwb_idata	VVAR(_dwb_idata)
+#define	wbu_stall	VVAR(___Vcellinp__genbus____pinNumber10)
+#define	wbu_ack		VVAR(___Vcellinp__genbus____pinNumber9)
+#define	sdram_maintenance	VVAR(_sdram__DOT__maintenance_mode)
+#define	sdram_sel		VVAR(_iovec)&8
+#define	sdram_cs	VVAR(_sdram__DOT__m_ram_cs_n)
+#define	sdram_ras	VVAR(_sdram__DOT__m_ram_ras_n)
+#define	sdram_cas	VVAR(_sdram__DOT__m_ram_cas_n)
+#define	sdram_we	VVAR(_sdram__DOT__m_ram_we_n)
 
 #define	FLASH_ADDRESS	0x100000
 #define	FLASH_LENGTH	0x100000
@@ -516,7 +581,7 @@ public:
 				m_core->o_ram_data, m_core->o_ram_dqm);
 
 		m_core->i_rx_uart = m_uart(m_core->o_tx_uart,
-				m_core->v__DOT__serialport__DOT__r_setup);
+				m_core->VVAR(_serialport__DOT__r_setup));
 		PIPECMDR::tick();
 		// Sim instructions
 		if ((m_core->cpu_op_sim)
@@ -531,28 +596,28 @@ public:
 #ifdef	DEBUGGING_OUTPUT
 		bool	writeout = false;
 		/*
-		if (m_core->v__DOT__sdram__DOT__r_pending)
+		if (m_core->sdram_r_pending)
 			writeout = true;
-		else if (m_core->v__DOT__sdram__DOT__bank_active[0])
+		else if (m_core->sdram_bank_active[0])
 			writeout = true;
-		else if (m_core->v__DOT__sdram__DOT__bank_active[1])
+		else if (m_core->sdram_bank_active[1])
 			writeout = true;
-		else if (m_core->v__DOT__sdram__DOT__bank_active[2])
+		else if (m_core->sdram_bank_active[2])
 			writeout = true;
-		else if (m_core->v__DOT__sdram__DOT__bank_active[3])
+		else if (m_core->sdram_bank_active[3])
 			writeout = true;
 		*/
 
-		// if ((m_core->v__DOT__wbu_cyc)&&(!m_core->v__DOT__wbu_we))
+		// if ((m_core->wbu_cyc)&&(!m_core->wbu_we))
 			// writeout = true;
 		/*
-		if ((m_core->v__DOT__wbu_cyc)&&(!m_core->v__DOT__wbu_we))
+		if ((m_core->wbu_cyc)&&(!m_core->wbu_we))
 			writeout = true;
-		if (m_core->v__DOT__genbus__DOT__exec_stb)
+		if (m_core->exec_stb)
 			writeout = true;
 		*/
 
-		// if ((m_core->v__DOT__swic__DOT__thecpu__DOT__instruction_decoder__DOT__genblk3__DOT__r_early_branch)
+		// if ((m_core->cpu_early_branch)
 			// &&(m_core->v__DOT__swic__DOT__thecpu__DOT__instruction == 0x7883ffff))
 			// m_busy+=2;
 		// else if (m_busy > 0) m_busy--;
@@ -563,29 +628,29 @@ public:
 		// if (m_core->v__DOT__uart_tx_int)
 			// writeout = true;
 #ifdef	XULA25
-		if (m_core->v__DOT__swic__DOT__genblk10__DOT__pic__DOT__r_any)
+		if (m_core->pic_any)
 			writeout = true;
 #endif
 
 #ifdef	XULA25
-		unsigned this_pic = ((m_core->v__DOT__swic__DOT__genblk10__DOT__pic__DOT__r_int_enable)<<16) | 
-				(m_core->v__DOT__swic__DOT__genblk10__DOT__pic__DOT__r_int_state);
+		unsigned this_pic = ((m_core->pic_int_enable)<<16) | 
+				(m_core->pic_int_state);
 #else
 		unsigned this_pic = 0;
 #endif
 
 		// if (this_pic != m_last_pic)
 			// writeout = true;
-		unsigned tx_state = ((m_core->v__DOT__serialport__DOT__txmod__DOT__zero_baud_counter)<<20)
-			|((m_core->v__DOT__serialport__DOT__txmod__DOT__r_busy)<<16)
-			|((m_core->v__DOT__serialport__DOT__txmod__DOT__lcl_data)<<8)
-			|((m_core->v__DOT__serialport__DOT__txmod__DOT__baud_counter&0x0f)<<4)
-			|(m_core->v__DOT__serialport__DOT__txmod__DOT__state);
+		unsigned tx_state = ((m_core->uart_tx_zero_baud)<<20)
+			|((m_core->uart_tx_busy)<<16)
+			|((m_core->uart_tx_data)<<8)
+			|((m_core->uart_tx_counter&0x0f)<<4)
+			|(m_core->uart_tx_state);
 		/*
 		if (tx_state != m_last_tx_state)
 			writeout = true;
 		*/
-		int bus_owner = m_core->v__DOT__wbu_zip_arbiter__DOT__r_a_owner;
+		int bus_owner = m_core->arbiter_owner;
 		/*
 		if (bus_owner != m_last_bus_owner)
 			writeout = true;
@@ -614,30 +679,30 @@ writeout = true;
 			*/
 
 			printf("(%d/%d,%d/%d->%d),(%c:%d,%d->%d)|%c[%08x/%08x]@%08x %c%c%c",
-				m_core->v__DOT__wbu_cyc,
+				m_core->wbu_cyc,
 				0, // m_core->v__DOT____Vcellinp__wbu_zip_arbiter____pinNumber10,
-				m_core->v__DOT__dwb_cyc, // was zip_cyc
+				m_core->dwb_cyc, // was zip_cyc
 #ifdef	XULA25
-				(m_core->v__DOT__swic__DOT__ext_cyc),
+				0, //(m_core->ext_cyc),
 #else
 				0,
 #endif
-				m_core->v__DOT__wb_cyc,
+				m_core->wb_cyc,
 				//
-				m_core->v__DOT__wbu_zip_arbiter__DOT__r_a_owner?'Z':'j',
-				m_core->v__DOT__wbu_stb,
+				m_core->arbiter_owner ?'Z':'j',
+				m_core->wbu_stb,
 				// 0, // m_core->v__DOT__dwb_stb, // was zip_stb
-				m_core->v__DOT__swic__DOT__thecpu__DOT__mem_stb_gbl,
-				m_core->v__DOT__wb_stb,
+				m_core->cpu_mem_stb,
+				m_core->wb_stb,
 				//
-				(m_core->v__DOT__wb_we)?'W':'R',
-				m_core->v__DOT__wb_data,
-					m_core->v__DOT__dwb_idata,
+				(m_core->wb_we)?'W':'R',
+				m_core->wb_data,
+					m_core->wb_idata,
 				m_core->wb_addr,
 				(m_core->wb_ack)?'A':
-					(m_core->v__DOT____Vcellinp__genbus____pinNumber9)?'a':' ',
+					(m_core->wbu_ack)?'a':' ',
 				(m_core->wb_stall)?'S':
-					(m_core->v__DOT____Vcellinp__genbus____pinNumber10)?'s':' ',
+					(m_core->wbu_stall)?'s':' ',
 				(m_core->wb_err)?'E':'.');
 
 			/*
@@ -667,12 +732,10 @@ writeout = true;
 
 			// SDRAM debug lines
 			printf("%c%c[%d%d%d%d,%d%d%d%d,%d:%04x%c]@%06x(%d) ->%06x%c",
-#define	sdram_maintenance	v__DOT__sdram__DOT__maintenance_mode
-#define	sdram_sel		v__DOT__iovec&8
 				(m_core->sdram_maintenance)?'M':' ',
 				(m_core->sdram_sel)?'!':' ',
-				m_core->v__DOT__sdram__DOT__m_ram_cs_n, m_core->v__DOT__sdram__DOT__m_ram_ras_n,
-				m_core->v__DOT__sdram__DOT__m_ram_cas_n, m_core->v__DOT__sdram__DOT__m_ram_we_n,
+				m_core->sdram_cs,  m_core->sdram_ras,
+				m_core->sdram_cas, m_core->sdram_we,
 				m_core->o_ram_cs_n, m_core->o_ram_ras_n,
 				m_core->o_ram_cas_n, m_core->o_ram_we_n,
 				m_core->o_ram_bs, m_core->o_ram_data,
@@ -683,87 +746,91 @@ writeout = true;
 				(m_core->o_ram_drive_data)?'-':'V');
 
 			printf(" SD[%d,%d-%3x%d]",
-				m_core->v__DOT__sdram__DOT__r_state,
+				m_core->sdram_state,
 				m_sdram.pwrup(),
-				m_core->v__DOT__sdram__DOT__refresh_clk,
-				m_core->v__DOT__sdram__DOT__need_refresh);
+				m_core->sdram_refresh_clk,
+				m_core->sdram_need_refresh);
 
 			printf(" BNK[%d:%6x,%d:%6x,%d:%6x,%d:%6x],%x%d",
-				m_core->v__DOT__sdram__DOT__bank_active[0],
-				m_core->v__DOT__sdram__DOT__bank_row[0],
-				m_core->v__DOT__sdram__DOT__bank_active[1],
-				m_core->v__DOT__sdram__DOT__bank_row[1],
-				m_core->v__DOT__sdram__DOT__bank_active[2],
-				m_core->v__DOT__sdram__DOT__bank_row[2],
-				m_core->v__DOT__sdram__DOT__bank_active[3],
-				m_core->v__DOT__sdram__DOT__bank_row[3],
+				m_core->sdram_bank_active[0],
+				m_core->sdram_bank_row[0],
+				m_core->sdram_bank_active[1],
+				m_core->sdram_bank_row[1],
+				m_core->sdram_bank_active[2],
+				m_core->sdram_bank_row[2],
+				m_core->sdram_bank_active[3],
+				m_core->sdram_bank_row[3],
 				m_core->sdram_clocks_til_idle,
-				m_core->v__DOT__sdram__DOT__r_barrell_ack);
+				m_core->sdram_barrell_ack);
 
 			printf(" %s%s%c[%08x@%06x]",
-				(m_core->v__DOT__sdram__DOT__bus_cyc)?"C":" ",
-				(m_core->v__DOT__sdram__DOT__r_pending)?"PND":"   ",
-				(m_core->v__DOT__sdram__DOT__r_we)?'W':'R',
-				(m_core->v__DOT__sdram__DOT__r_we)
-				?(m_core->v__DOT__sdram__DOT__r_data)
-				:(m_core->v__DOT__sdram_data),
-				(m_core->v__DOT__sdram__DOT__r_addr));
+				(m_core->sdram_bus_cyc)?"C":" ",
+				(m_core->sdram_r_pending)?"PND":"   ",
+				(m_core->sdram_r_we)?'W':'R',
+				(m_core->sdram_r_we)
+					?(m_core->sdram_r_data)
+					:(m_core->sdram_data),
+				(m_core->sdram_r_addr));
 
 			// CPU Pipeline debugging
 			printf("%s%s%s%s%s%s%s%s%s%s%s",
 				// (m_core->v__DOT__swic__DOT__dbg_ack)?"A":"-",
 				// (m_core->v__DOT__swic__DOT__dbg_stall)?"S":"-",
 				// (m_core->v__DOT__swic__DOT__sys_dbg_cyc)?"D":"-",
-				(m_core->v__DOT__swic__DOT__cpu_lcl_cyc)?"L":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__r_halted)?"Z":"-",
+				(m_core->cpu_cyc_lcl)?"L":"-",
+				(m_core->cpu_halted)?"Z":"-",
 				(m_core->cpu_break)?"!":"-",
 				(m_core->cpu_cmd_halt)?"H":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__r_gie)?"G":"-",
+				(m_core->cpu_gie)?"G":"-",
 				(m_core->cpu_pf_cyc)?"P":"-",
 				(m_core->cpu_pf_valid)?"V":"-",
 				(m_core->cpu_pf_illegal)?"i":" ",
 				(m_core->cpu_new_pc)?"N":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__domem__DOT__r_wb_cyc_gbl)?"G":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__domem__DOT__r_wb_cyc_lcl)?"L":"-");
+				(m_core->cpu_cyc_gbl)?"G":"-",
+				(m_core->cpu_lcl_cyc)?"L":"-");
 			printf("|%s%s%s%s%s%s",
 				(m_core->cpu_dcd_valid)?"D":"-",
 				(dcd_ce())?"d":"-",
 				"x", // (m_core->v__DOT__swic__DOT__thecpu__DOT__dcdA_stall)?"A":"-",
 				"x", // (m_core->v__DOT__swic__DOT__thecpu__DOT__dcdB_stall)?"B":"-",
 				"x", // (m_core->v__DOT__swic__DOT__thecpu__DOT__dcdF_stall)?"F":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__dcd_illegal)?"i":"-");
+				(m_core->cpu_dcd_illegal)?"i":"-");
 			
 			printf("|%s%s%s%s%s%s%s%s%s%s",
 				(m_core->cpu_op_valid)?"O":"-",
 				(m_core->cpu_op_ce)?"k":"-",
 				(m_core->cpu_op_stall)?"s":"-",
 				(m_core->cpu_op_illegal)?"i":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__r_op_break)?"B":"-",
+				(m_core->cpu_op_break)?"B":"-",
 				(m_core->cpu_op_lock)?"L":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__r_op_pipe)?"P":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__r_break_pending)?"p":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__r_op_gie)?"G":"-",
+				(m_core->cpu_op_pipe)?"P":"-",
+				(m_core->cpu_break_pending)?"p":"-",
+				(m_core->cpu_gie)?"G":"-",
 				(m_core->cpu_op_valid_alu)?"A":"-");
 			printf("|%s%s%s%s%s",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__alu_ce)?"a":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__alu_stall)?"s":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__doalu__DOT__r_busy)?"B":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__r_alu_gie)?"G":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__r_alu_illegal)?"i":"-");
+				(m_core->cpu_alu_ce)?"a":"-",
+				" ", // (m_core->v__DOT__swic__DOT__thecpu__DOT__alu_stall)?"s":"-",
+				(m_core->cpu_alu_busy)?"B":"-",
+				(m_core->cpu_gie)?"G":"-",
+				(m_core->cpu_alu_illegal)?"i":"-");
+#define	cpu_adf_ce_unconditional	CPUVAR(_adf_ce_unconditional)
+#define	cpu_mem_ce		CPUVAR(_mem_ce)
 			printf("|%s%s%s%2x %s%s%s %2d %2d",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__op_valid_mem)?"M":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__mem_ce)?"m":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__adf_ce_unconditional)?"!":"-",
-				(m_core->v__DOT__swic__DOT__cmd_addr),
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__bus_err)?"BE":"  ",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__ibus_err_flag)?"IB":"  ",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__r_ubus_err_flag)?"UB":"  ",
-				m_core->v__DOT__swic__DOT__thecpu__DOT__domem__DOT__rdaddr,
-				m_core->v__DOT__swic__DOT__thecpu__DOT__domem__DOT__wraddr);
+				(m_core->cpu_op_valid_mem)?"M":"-",
+				(m_core->cpu_mem_ce)?"m":"-",
+				(m_core->cpu_adf_ce_unconditional)?"!":"-",
+				(m_core->cpu_cmd_addr),
+				(m_core->cpu_bus_err)?"BE":"  ",
+				(m_core->cpu_ibus_err)?"IB":"  ",
+				(m_core->cpu_ubus_err)?"UB":"  ",
+#define	cpu_pmem_rdaddr	CPUVAR(_genblk26__DOT__MEM__DOT__domem__DOT__rdaddr)
+#define	cpu_pmem_wraddr	CPUVAR(_genblk26__DOT__MEM__DOT__domem__DOT__wraddr)
+				m_core->cpu_pmem_rdaddr,
+				m_core->cpu_pmem_wraddr);
 #ifdef	XULA25
 			printf("|%s%s",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__div_busy)?"D":"-",
-				(m_core->v__DOT__swic__DOT__thecpu__DOT__div_error)?"E":"-");
+				(m_core->cpu_div_busy)?"D":"-",
+				(m_core->cpu_div_error)?"E":"-");
 #endif
 			printf("|%s%s[%2x]%08x",
 				(m_core->cpu_wr_reg_ce)?"W":"-",
@@ -818,11 +885,11 @@ writeout = true;
 //				m_core->v__DOT__swic__DOT__thecpu__DOT__opR);
 
 			printf(" %s[%02x]=%08x(%08x)",
-				m_core->v__DOT__swic__DOT__thecpu__DOT__wr_reg_ce?"WR":"--",
-				m_core->v__DOT__swic__DOT__thecpu__DOT__wr_reg_id,
-				m_core->v__DOT__swic__DOT__thecpu__DOT__wr_gpreg_vl,
+				m_core->cpu_wr_reg_ce?"WR":"--",
+				m_core->cpu_wr_reg_id,
+				m_core->cpu_wr_gpreg_vl,
 #ifdef	XULA25
-				m_core->v__DOT__swic__DOT__thecpu__DOT__wr_spreg_vl
+				m_core->cpu_wr_spreg_vl
 #else
 				0
 #endif
@@ -858,16 +925,16 @@ writeout = true;
 */
 #ifdef	XULA25
 			printf(" %s-%s %04x/%04x",
-				(m_core->v__DOT__swic__DOT__genblk10__DOT__pic__DOT__r_any)?"PIC":"pic",
-				(m_core->v__DOT__swic__DOT__genblk10__DOT__pic__DOT__r_gie)?"INT":"( )",
-				m_core->v__DOT__swic__DOT__genblk10__DOT__pic__DOT__r_int_enable,
-				m_core->v__DOT__swic__DOT__genblk10__DOT__pic__DOT__r_int_state);
+				(m_core->pic_any)?"PIC":"pic",
+				(m_core->pic_gie)?"INT":"( )",
+				m_core->pic_int_enable,
+				m_core->pic_int_state);
 #else
 			printf(" %s-%s %04x/%04x",
-				(m_core->v__DOT__runio__DOT__intcontroller__DOT__r_any)?"PIC":"pic",
-				(m_core->v__DOT__runio__DOT__intcontroller__DOT__r_gie)?"INT":"( )",
-				m_core->v__DOT__runio__DOT__intcontroller__DOT__r_int_enable,
-				m_core->v__DOT__runio__DOT__intcontroller__DOT__r_int_state);
+				(m_core->pic_any)?"PIC":"pic",
+				(m_core->pic_gie)?"INT":"( )",
+				m_core->pic_int_enable,
+				m_core->pic_int_state);
 #endif
 	
 
@@ -997,9 +1064,11 @@ writeout = true;
 			*/
 
 #ifdef	OPT_ZIPSYSTEM
+#define	main_int_vector	VVAR(_swic__DOT__main_int_vector)
+#define	pic_data	VVAR(_swic__DOT__pic_data)
 			printf(" %08x-PIC%08x",
-				m_core->v__DOT__swic__DOT__main_int_vector,
-				m_core->v__DOT__swic__DOT__pic_data);
+				m_core->main_int_vector,
+				m_core->pic_data);
 #endif
 
 			printf(" R0 = %08x", m_core->cpu_regs[0]);
@@ -1034,7 +1103,7 @@ if (m_core->cpu_break) {
 	bool	dcd_ce(void) {
 		if (!m_core->cpu_dcd_valid)
 			return true;
-		// if (!m_core->v__DOT__swic__DOT__thecpu__DOT__op_stall)
+		// if (!m_core->cpu_op_stall)
 			// return true;
 		return false;
 	}

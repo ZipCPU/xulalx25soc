@@ -181,7 +181,9 @@ int main(int argc, char **argv) {
 				use_usb = false;
 				if (isdigit(argv[argn+skp][2]))
 					port = atoi(&argv[argn+skp][2]);
-			} else {
+			} else if (argv[argn+skp][1] == 'v')
+				verbose = true;
+			else {
 				usage();
 				exit(EXIT_SUCCESS);
 			}

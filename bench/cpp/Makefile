@@ -28,7 +28,7 @@
 ## for more details.
 ##
 ## You should have received a copy of the GNU General Public License along
-## with this program.  (It's in the $(ROOT)/doc directory, run make with no
+## with this program.  (It's in the $(ROOT)/doc directory.  Run make with no
 ## target there if the PDF file isn't present.)  If not, see
 ## <http://www.gnu.org/licenses/> for a copy.
 ##
@@ -47,24 +47,24 @@ OBJDIR   :=  obj-pc
 YYMMDD   := `date +%Y%m%d`
 RTLDR    := ../../rtl
 VOBJDR   := $(RTLDR)/obj_dir
-VROOT   ?= $(shell bash -c 'verilator -V|grep VERILATOR_ROOT | head -1 | sed -e " s/^.*=\s*//"')
+ifneq ($(VERILATOR_ROOT),)
+VERILATOR:=$(VERILATOR_ROOT)/bin/verilator
+else
+VERILATOR_ROOT ?= $(shell bash -c 'verilator -V|grep VERILATOR_ROOT | head -1 | sed -e " s/^.*=\s*//"')
+endif
+export	$(VERILATOR)
+VROOT   := $(VERILATOR_ROOT)
+VDEFS   := $(shell ./vversion.sh)
 VINC     := -I$(VROOT)/include -I$(VOBJDR) -I$(VROOT)/include/vltstd -I$(RTLDR) -I../../sw/
-CFLAGS   :=  -c -g -Wall -I. $(VINC)
+CFLAGS   :=  -c -g -Wall $(VDEFS) -I. $(VINC)
 # Now return to the "all" target, and fill in some details
-all:	$(OBJDIR)/ programs archive
+all:	programs archive
 
 # GFXFLAGS :=  `pkg-config gtkmm-3.0 --cflags`
 # GFXLIBS  :=  `pkg-config gtkmm-3.0 --cflags --libs`
 
 .PHONY: programs
 programs:	busmaster_tb
-
-.PHONY: clean
-clean:
-	rm -f busmaster_rb $(OBJDIR)/*.o
-
-$(OBJDIR)/:
-	@bash -c "if [ ! -e $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi"
 
 CLSHEADERS:= qspiflashsim.h sdramsim.h sdspisim.h uartsim.h
 CLSSOURCES:= $(subst .h,.cpp,$(CLSHEADERS))
@@ -74,11 +74,13 @@ SOURCES := $(CLSSOURCES)
 HEADERS := $(CLSHEADERS)
 
 $(OBJDIR)/%.o: %.cpp
+	$(mk-objdir)
 	$(CXX) $(CFLAGS) $< -o $@
 $(OBJDIR)/busmaster_tb.o: busmaster_tb.cpp pipecmdr.h sdramsim.h zipelf.h
 $(OBJDIR)/busmaster_tb.o: port.h $(VOBJDR)/Vbusmaster.h
 	$(CXX) $(CFLAGS) busmaster_tb.cpp -o $@
 $(OBJDIR)/%.o: $(VROOT)/include/%.cpp
+	$(mk-objdir)
 	$(CXX) $(CFLAGS) $< -o $@
 
 busmaster_tb: $(OBJDIR)/qspiflashsim.o $(OBJDIR)/sdspisim.o
@@ -91,6 +93,7 @@ busmaster_tb: $(OBJDIR)/busmaster_tb.o
 
 define	build-depends
 	@echo "Building dependency file"
+	$(mk-objdir)
 	@bash -c "if [ ! -e $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi"
 	@$(CXX) $(CPPFLAGS) -MM $(SOURCES) > $(OBJDIR)/xdepends.txt
         @sed -e 's/^.*.o: /$(OBJDIR)\/&/' < $(OBJDIR)/xdepends.txt > $(OBJDIR)/depends.txt
@@ -104,6 +107,16 @@ tags:	$(SOURCES) $(HEADERS)
 .PHONY: depends
 depends: tags
 	$(build-depends)
+
+define	mk-objdir
+	@bash -c "if [ ! -e $(OBJDIR) ]; then mkdir -p $(OBJDIR)/; fi"
+endef
+
+$(OBJDIR)/depends.txt: depends
+
+.PHONY: clean
+clean:
+	rm -f busmaster_rb $(OBJDIR)/
 
 .PHONY: archive
 archive:

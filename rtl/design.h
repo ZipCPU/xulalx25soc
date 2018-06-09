@@ -32,7 +32,7 @@
 #ifdef	INCLUDE_ZIPCPU
 #ifdef	VERILATOR
 #define	ZIP_SCOPE
-#else // VERILATOR
+#else // !VERILATOR
 #ifdef	XULA25
 #endif // XULA25
 #endif // VERILATOR
@@ -69,7 +69,7 @@
 #ifdef	FMHACK
 #else
 #endif
-#else
+#else	// XULA25
 #endif
 #ifdef	FMHACK
 #else
@@ -123,6 +123,8 @@
 #endif
 #ifdef	ZIP_SCOPE
 #else
+#endif
+#ifndef	XULA25
 #endif
 
 #endif // DESIGN_H

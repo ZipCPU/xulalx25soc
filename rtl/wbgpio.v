@@ -63,7 +63,7 @@
 module wbgpio(i_clk, i_wb_cyc, i_wb_stb, i_wb_we, i_wb_data, o_wb_data,
 		i_gpio, o_gpio, o_int);
 	parameter		NIN=16, NOUT=16;
-	parameter [(NOUT-1):0]	DEFAULT=16'h00;
+	parameter [(16-1):0]	DEFAULT=16'h00;
 	input	wire		i_clk;
 	//
 	input	wire		i_wb_cyc, i_wb_stb, i_wb_we;
@@ -76,7 +76,7 @@ module wbgpio(i_clk, i_wb_cyc, i_wb_stb, i_wb_we, i_wb_data, o_wb_data,
 	output	reg		o_int;
 
 	// 9LUT's, 16 FF's
-	initial	o_gpio = DEFAULT;
+	initial	o_gpio = DEFAULT[(NOUT-1):0];
 	always @(posedge i_clk)
 		if ((i_wb_stb)&&(i_wb_we))
 			o_gpio <= ((o_gpio)&(~i_wb_data[(NOUT+16-1):16]))

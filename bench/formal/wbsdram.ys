@@ -1,0 +1,5 @@
+read_verilog -D WBSDRAM -formal ../../rtl/wbsdram.v
+read_verilog -formal fwb_slave.v
+prep -top wbsdram -nordff
+opt -share_all
+write_smt2 -wires wbsdram.smt2

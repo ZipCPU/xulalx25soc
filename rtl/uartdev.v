@@ -51,7 +51,13 @@ module	uartdev(i_clk, i_rx_uart, o_tx_uart,
 		i_wb_cyc, i_wb_stb, i_wb_we, i_wb_addr, i_wb_data,
 			o_wb_ack, o_wb_stall, o_wb_data,
 		o_rx_int, o_tx_int, o_debug);
+`ifdef	VERILATOR
+	// 1MBaud
+	parameter	DEFAULT_SETUP = { 3'b100, 1'b0, 1'b0, 2'b00, 24'd80 };
+`else
+	// 9600 Baud
 	parameter	DEFAULT_SETUP = { 3'b100, 1'b0, 1'b0, 2'b00, 24'd8333 };
+`endif
 	input	wire		i_clk, i_rx_uart;
 	output	wire		o_tx_uart;
 	input	wire		i_wb_cyc, i_wb_stb, i_wb_we;
