@@ -2400,8 +2400,8 @@ always	@(posedge i_clk)
 	// Make verilator happy
 	//{{{
 	// verilator lint_off UNUSED
-	wire	[56:0]	unused;
-	assign	unused = { pf_new_pc,
+	wire	[57:0]	unused;
+	assign	unused = { debug_trigger, pf_new_pc,
 		fpu_ce, pf_data, wr_spreg_vl[1:0],
 		ipc[1:0], upc[1:0], pf_pc[1:0],
 		dcd_rA, dcd_pipe, dcd_zI,
