@@ -96,14 +96,14 @@ public:
 		// logic depends.  This forces that logic to be recalculated
 		// before the top of the clock.
 		eval();
-		if (m_trace) m_trace->dump(10*m_tickcount-2);
+		if (m_trace) m_trace->dump((vluint64_t)(10*m_tickcount-2));
 		m_core->i_clk = 1;
 		eval();
-		if (m_trace) m_trace->dump(10*m_tickcount);
+		if (m_trace) m_trace->dump((vluint64_t)(10*m_tickcount));
 		m_core->i_clk = 0;
 		eval();
 		if (m_trace) {
-			m_trace->dump(10*m_tickcount+5);
+			m_trace->dump((vluint64_t)(10*m_tickcount+5));
 			m_trace->flush();
 		}
 	}

@@ -116,7 +116,7 @@ $(OBJDIR)/depends.txt: depends
 
 .PHONY: clean
 clean:
-	rm -f busmaster_rb $(OBJDIR)/
+	rm -rf busmaster_rb $(OBJDIR)/
 
 .PHONY: archive
 archive:
