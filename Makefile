@@ -127,9 +127,7 @@ timing:
 
 .PHONY: clean
 clean:
-	+$(SUBMAKE) auto-data     clean
-	+$(SUBMAKE) sim/verilated clean
+#	+$(SUBMAKE) auto-data     clean
+	+$(SUBMAKE) bench/cpp     clean
 	+$(SUBMAKE) rtl           clean
-	+$(SUBMAKE) sw/zlib       clean
-	+$(SUBMAKE) sw/board      clean
-	+$(SUBMAKE) sw/host       clean
+	+$(SUBMAKE) sw            clean
