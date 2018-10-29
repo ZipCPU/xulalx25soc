@@ -51,18 +51,14 @@ INDARGS := $(SOLVER) -i
 
 SDRAM    := wbsdram
 
-$(SDRAM).smt2: $(RTL)/$(SDRAM).v fwb_slave.v $(SDRAM).ys
-	yosys -ql $(SDRAM).yslog -s $(SDRAM).ys
-
 $(SDRAM) : $(SDRAM).check
-$(SDRAM).check: $(SDRAM).smt2
+$(SDRAM).check: $(RTL)/$(SDRAM).v fwb_slave.v $(SDRAM).ys
 	rm -f $@
-	$(SMTBMC) $(BMCARGS) -t 44 --dump-vcd $(SDRAM).vcd $(SDRAM).smt2
-	$(SMTBMC) $(INDARGS) -t 40 --dump-vcd $(SDRAM).vcd $(SDRAM).smt2
+	sby -f $(SDRAM).sby
 	touch $@
 
 
 .PHONY: clean
 clean:
-	rm -f  $(SDRAM).smt2  $(SDRAM).yslog   $(SDRAM)*.vcd
+	rm -f $(SDRAM)/
 	rm -f *.check

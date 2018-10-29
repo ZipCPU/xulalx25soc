@@ -7,6 +7,17 @@
 // Purpose:	To read out, and decompose, the results of the wishbone scope
 //		as applied to the ICAPE interaction on a SPARTAN6.
 //
+//	This is provided together with the wbscope project as an example of
+//	what might be done with the wishbone scope.  The intermediate details,
+//	though, between this and the wishbone scope are not part of the
+//	wishbone scope project.
+//
+//	Using this particular scope made it a *lot* easier to get the ICAPE2
+//	interface up and running, since I was able to see what was going right
+//	(or wrong) with the interface as I was developing it.  Sure, it
+//	would've been better to get it to work under a simulator instead of
+//	with the scope, but not being certain of how the interface was
+//	supposed to work made building a simulator difficult.
 //
 // Creator:	Dan Gisselquist, Ph.D.
 //		Gisselquist Technology, LLC
