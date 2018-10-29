@@ -2324,8 +2324,6 @@ module	zipcpu(i_clk, i_reset, i_interrupt,
 `ifdef	DEBUG_SCOPE
 	//{{{
 
-	reg		debug_trigger;
-	initial	debug_trigger = 1'b0;
 	always @(posedge i_clk)
 		o_debug <= {
 		/*
@@ -2400,8 +2398,8 @@ always	@(posedge i_clk)
 	// Make verilator happy
 	//{{{
 	// verilator lint_off UNUSED
-	wire	[57:0]	unused;
-	assign	unused = { debug_trigger, pf_new_pc,
+	wire	[56:0]	unused;
+	assign	unused = { pf_new_pc,
 		fpu_ce, pf_data, wr_spreg_vl[1:0],
 		ipc[1:0], upc[1:0], pf_pc[1:0],
 		dcd_rA, dcd_pipe, dcd_zI,

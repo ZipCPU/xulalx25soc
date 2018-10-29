@@ -179,7 +179,7 @@ module	wbsdram(i_clk,
 	initial	r_pending = 1'b0;
 	reg	[22:5]	fwd_addr;
 	initial	r_addr = 0;
-	initial	fwd_addr = 1;
+	initial	fwd_addr[22:5] = 1;
 	always @(posedge i_clk)
 		if (bus_cyc)
 		begin
