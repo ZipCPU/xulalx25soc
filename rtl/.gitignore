@@ -1,3 +1,6 @@
+*-xula.tjz
+design.h
+cpudefs.h
 cpu/diffzip.sh
 debug.txt
 dump.txt
