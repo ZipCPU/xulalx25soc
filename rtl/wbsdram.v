@@ -179,7 +179,7 @@ module	wbsdram(i_clk,
 	initial	r_pending = 1'b0;
 	reg	[22:5]	fwd_addr;
 	initial	r_addr = 0;
-	initial	fwd_addr[22:5] = 1;
+	initial fwd_addr[22:5] = 1;
 	always @(posedge i_clk)
 		if (bus_cyc)
 		begin
@@ -188,7 +188,7 @@ module	wbsdram(i_clk,
 			r_addr    <= i_wb_addr;
 			r_data    <= i_wb_data;
 			r_sel     <= i_wb_sel;
-			fwd_addr  <= i_wb_addr[22:5] + 18'h01;
+			fwd_addr[22:5]  <= i_wb_addr[22:5] + 18'h01;
 		end else if ((!o_ram_cs_n)&&(o_ram_ras_n)&&(!o_ram_cas_n))
 			r_pending <= 1'b0;
 		else if (!i_wb_cyc)
